@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html ng-app="wf">
+<head>
+	<title></title>
+	<link rel="stylesheet" href="http://getbootstrap.com/2.3.2/assets/css/bootstrap.css"/>
+	<script type="text/javascript" src="../lib/angular.min.js"></script>
+	<script type="text/javascript" src="js/wf.js"></script>
+</head>
+<body>
+	<div ng-controller="Euclid" ng-init="init()">
+		big integer<input ng-model="a"/>
+		small integer<input ng-model="b"/>
+		<span>result is: {{result}}</span>
+		<button class="btn" ng-click="submit()">euclid</button>
+	</div>
+
+	<div ng-controller="Wizard" ng-init="init()">
+		<div ng-include src="'partial/1.html'"></div>
+		<div>
+			<button class="btn" ng-click="prev()" ng-disabled="isFirst()">prev</button>
+			<button class="btn" ng-click="next()" ng-disabled="isLast()">next</button>
+		</div>
+	</div>
+
+</body>
+</html>
