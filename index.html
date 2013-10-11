@@ -1,11 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html ng-app="mis">
 <head>
 	<title></title>
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
-	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
-</head>
-<body>
+	<script type="text/javascript" src="lib/angular.min.js"></script>
 	<script type="text/javascript" src="js/main.js"></script>
+	<script type="text/javascript" src="js/portal/portal.js"></script>
+</head>
+<body ng-controller="Portal">
+
+<div class="row">
+	<div class="panel panel-default col-md-4">
+		<div class="panel-heading">
+			<h3 class="panel-title">User Profile</h3>
+		</div>
+		<div class="panel-body">
+			<form role="form">
+				<div class="form-group">
+					<label for="nameInput">Username</label>
+					<input type="text" class="form-control" id="nameInput" ng-model="user.name" placeholder="Enter user name">
+				</div>
+				<div class="form-group">
+					<label for="ageInput">Password</label>
+					<input type="number" class="form-control" id="ageInput" ng-model="user.age" placeholder="Password">
+				</div>
+				<!--button type="submit" class="btn btn-default">Submit</button-->
+			</form>
+		</div>
+	</div>
+	<div class="col-md-8">
+		<div ng-include="'partial/profile.html'"></div>
+	</div>
+</div>
+<div class="row">
+	<div class="col-md-4">
+		<button ng-click="loadModule('a')">load module a</button>
+	</div>
+	<div class="col-md-4">.col-md-4</div>
+	<div class="col-md-4">.col-md-4</div>
+</div>
+<div class="row">
+	<div class="col-md-6">.col-md-6</div>
+	<div class="col-md-6">.col-md-6</div>
+</div>
 </body>
 </html>
