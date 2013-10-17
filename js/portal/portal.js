@@ -1,21 +1,44 @@
+(function () {
+	var app = angular.module('mis', []);
 
+	app.config(function ($routeProvider, $controllerProvider, $compileProvider, $filterProvider, $provide) {
+		app.controllerProvider = $controllerProvider;
+		app.compileProvider = $compileProvider;
+		app.routeProvider = $routeProvider;
+		app.filterProvider = $filterProvider;
+		app.provide = $provide;
 
-mis.controller("Portal", function($scope, $http) {
-	$scope.user = {
-		name: "Xufei",
-		age: 32
+		// Register routes with the $routeProvider
+	});
+})();
+
+angular.module("mis").directive("appLoader", function ($http, $compile, $rootScope, $q) {
+	return function (scope, element, attrs) {
+		var url = attrs.url;
+		var dependencies = attrs.scripts.split(",") || [];
+
+		var deferred = $q.defer();
+		// Load the dependencies
+		$script(dependencies, function () {
+			// all dependencies have now been loaded by so resolve the promise
+			$rootScope.$apply(function () {
+				deferred.resolve();
+				$http.get(url).success(function (result) {
+					element.html(result);
+					$compile(element.contents())(scope);
+				});
+			});
+		});
 	};
+});
 
-	$scope.loadModule = function(html, js) {
-		var htmlRequest = $http.get('FIRSTRESTURL', {cache: false});
-		var jsRequest = [];
+angular.module("mis").controller("Portal", function ($scope, $rootScope) {
+	$rootScope.$on("purchase", function(evt, arg) {
+		//$rootScope.$broadcast(evt.name, arg);
+	});
 
-		angular.forEach(js, function(item) {
-			jsRequest.push($http.get(item));
-		});
-
-		$q.all(jsRequest).then(function(values) {
-			$scope.results = MyService.doCalculation(values[0], values[1]);
-		});
+	$scope.user = {
+		name: "Xu.fei",
+		age: 32
 	};
 });
