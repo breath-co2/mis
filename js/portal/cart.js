@@ -1,9 +1,9 @@
-angular.module("mis").controllerProvider.register("Cart", function ($scope, $rootScope) {
+angular.module("mis").controllerProvider.register("Cart", function ($scope, EventBus) {
 	$scope.goodsList = [];
 	$scope.price = 0;
 
-	$scope.$on("purchase", function(evt, arg) {
-		$scope.goodsList = arg;
+	EventBus.on("purchase", function(evt) {
+		$scope.goodsList = evt.data;
 
 		var price = 0;
 		angular.forEach($scope.goodsList, function(item) {
