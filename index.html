@@ -19,36 +19,52 @@
 <body ng-controller="Portal">
 <div>
 	<div class="row">
-
-		<div class="panel panel-default col-md-4">
-			<div class="panel-heading">
-				<h3 class="panel-title">User Profile</h3>
-			</div>
-			<div class="panel-body">
-				<form role="form">
-					<div class="form-group">
-						<label for="nameInput">Username</label>
-						<input type="text" class="form-control" id="nameInput" ng-model="user.name"
-						       placeholder="Enter user name">
-					</div>
-					<div class="form-group">
-						<label for="ageInput">Password</label>
-						<input type="number" class="form-control" id="ageInput" ng-model="user.age"
-						       placeholder="Password">
-					</div>
-					<!--button type="submit" class="btn btn-default">Submit</button-->
-				</form>
+		<div class="col-md-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">User Profile</h3>
+				</div>
+				<div class="panel-body">
+					<form role="form">
+						<div class="form-group">
+							<label for="nameInput">Username</label>
+							<input type="text" class="form-control" id="nameInput" ng-model="user.name"
+							       placeholder="Enter user name">
+						</div>
+						<div class="form-group">
+							<label for="ageInput">Password</label>
+							<input type="number" class="form-control" id="ageInput" ng-model="user.age"
+							       placeholder="Password">
+						</div>
+						<!--button type="submit" class="btn btn-default">Submit</button-->
+					</form>
+				</div>
 			</div>
 		</div>
+		<div class="col-md-4" ng-include="'partial/profile.html'"></div>
+		<div class="col-md-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Test</h3>
+				</div>
+				<div class="panel-body">
+					<div id="ngIncludeDiv" ng-include src="'partial/include/1.html'"></div>
+					<button ng-click="changeInclude(1)">1</button>
+					<button ng-click="changeInclude(2)">2</button>
+					<button ng-click="changeInclude(3)">3</button>
 
-		<div class="col-md-8" app-loader url="partial/cart.html" scripts="js/portal/cart.js"></div>
+					<script>
+						function changeInclude(index) {
+							document.getElementById("ngIncludeDiv").src = "partial/include/" + index + ".html";
+						}
+					</script>
+				</div>
+			</div>
+		</div>
 	</div>
 	<div class="row">
-		<div class="col-md-4">
-			<div ng-include="'partial/profile.html'"></div>
-		</div>
 		<div class="col-md-4" app-loader url="partial/goods.html" scripts="js/portal/goods.js"></div>
-		<div class="col-md-4">.col-md-4</div>
+		<div class="col-md-8" app-loader url="partial/cart.html" scripts="js/portal/cart.js"></div>
 	</div>
 	<div class="row">
 		<div class="col-md-6">.col-md-6</div>

@@ -1,7 +1,6 @@
-MIS系统全称是管理信息系统，代表着一大类传统软件，包括办公自动化，资源管理，业务受理等各大方向。曾经这些系统都是C/S架构的，但是最近10年，大部分都迁移到B/S架构了。
+MIS系统全称是管理信息系统，代表着一大类传统软件，包括办公自动化，资源管理，业务受理，金融结算等各大方向。曾经这些系统都是C/S架构的，但是最近10年，大部分都迁移到B/S架构了。
 
 对B/S系统的架构有很多文章谈，但一般都集中在后端架构，很少有谈前端的，更少细致深入谈前端架构的，这个系列文章，就是打算作一下尝试，对每个细节，也尽量会给一些具体实现方式的建议。
-
 
 
 #1. 菜单的集成
@@ -11,6 +10,49 @@ MIS系统全称是管理信息系统，代表着一大类传统软件，包括�
 这种方式是很简便，但有一些弊端，比如说，被集成的菜单界面自身功能要完整，即使没有门户界面，它也要能运行起来，这就要求它自身就包含所依赖的库，这么一来，每个界面都加载了一套库，实际上这是公共的，没有必要每个界面都加载，网络传输这个可以通过缓存来解决，但每个库自己在当前页面构建的一套内存环境，是没法优化的。
 
 现在我们有一些办法来实现这个功能，但是消除带来的缺陷。比如说，AngularJS框架的ng-include和ng-view功能，就很适合做这个。如果使用ng-view，需要配合路由功能来使用。
+
+一条功能菜单，首先必须是有界面的，这个界面可以是html partial，只有html的其中一个片段，没有头尾，除此之外，绝大多数还需要有逻辑代码，在AngularJS中，体现为controller，service等。
+
+考虑到MIS系统一般比较庞大，这两块东西都是要做按需载入的，html的动态载入比较简单，就$http.get获取过来，然后设置到界面某个地方的innerHTML完事，但是它上面绑定的controller就有些麻烦了。我们还是先看简单的吧，只有html的情况如何处理。
+
+	<div ng-include src="'views/sidepanel.html'"></div>
+
+这句代码非常简单，src所指向的界面片段将被直接包含进来，跟直接写在主界面中所表现出来的行为完全一致。
+
+我们来看看如果用路由，该如何实现这个场景。
+
+	var todoApp = angular.module('todoApp', [])
+		.config(['$routeProvider', function($routeProvider) {
+		$routeProvider
+			.when('/users', 
+				{templateUrl: 'users.html', controller: 'UsersCtrl'}
+			)
+			.when('/todos', 
+				{templateUrl: 'todos.html', controller: 'TodoCtrl' }
+			)
+			.otherwise({ redirectTo: '/users' });
+			}]);
+
+	todoApp.controller('UsersCtrl', function($scope) {
+		$scope.users = [];
+	});
+
+	todoApp.controller('TodoCtrl', function($scope) {
+		$scope.todos = [];
+	});
+
+HTML界面里加上这句即可：
+
+	<div ng-view></div>
+
+这样，我们在url上改变路径，就可以动态改变这个view，加载对应的partial界面。
+
+这么做有什么弊端呢？我们注意到，controller必须先加载出来，如果菜单模块很多，这么做就不太合适了，我们还是需要一个缓加载的机制，所幸AngularJS也帮我们考虑到了，他提供一个机制让加载路由之前可以插入自己的代码，我们可以在这里引入我们的控制器。
+
+
+还是有问题，因为在界面中只能存在一个ng-view，假如我们不是每次只想打开一个菜单界面，而是每一个作为选项卡打开，该怎么办呢？好像AngularJS没有为我们考虑这个问题，不要紧，毛主席教导我们：自己动手，丰衣足食。
+
+我们来看看加载界面的过程。
 
 #2. 界面的模块化
 
