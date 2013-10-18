@@ -12,7 +12,7 @@
 	});
 })();
 
-angular.module("mis").directive("appLoader", function ($http, $compile, $rootScope, $q) {
+angular.module("mis").directive("appLoader", function ($http, $compile, $rootScope, $q, $controller) {
 	return function (scope, element, attrs) {
 		var url = attrs.url;
 		var dependencies = attrs.scripts.split(",") || [];
@@ -25,7 +25,13 @@ angular.module("mis").directive("appLoader", function ($http, $compile, $rootSco
 				deferred.resolve();
 				$http.get(url).success(function (result) {
 					element.html(result);
-					$compile(element.contents())(scope);
+
+
+					var newScope = scope;
+
+					var controller = $controller("Cart", {$scope:newScope});
+
+					$compile(element.contents())(newScope);
 				});
 			});
 		});
@@ -33,8 +39,8 @@ angular.module("mis").directive("appLoader", function ($http, $compile, $rootSco
 });
 
 angular.module("mis").controller("Portal", function ($scope, $rootScope) {
-	$rootScope.$on("purchase", function(evt, arg) {
-		//$rootScope.$broadcast(evt.name, arg);
+	$scope.$on("purchase", function(evt, arg) {
+
 	});
 
 	$scope.user = {

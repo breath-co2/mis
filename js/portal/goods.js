@@ -4,7 +4,7 @@ angular.module("mis").controllerProvider.register("Goods", function ($scope, $ro
 	$scope.numOfPear = 0;
 
 	$scope.submit = function() {
-		$rootScope.$broadcast("purchase", [{
+		$scope.$emit("purchase", [{
 			type: "Apple",
 			number: this.numOfApple,
 			price: 5
