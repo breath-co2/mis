@@ -1,5 +1,5 @@
 (function () {
-	var app = angular.module('mis', []);
+	var app = angular.module("portal", []);
 
 	app.config(function ($routeProvider, $controllerProvider, $compileProvider, $filterProvider, $provide) {
 		app.controllerProvider = $controllerProvider;
@@ -12,7 +12,7 @@
 	});
 })();
 
-angular.module("mis").service("EventBus", function() {
+angular.module("portal").service("EventBus", function() {
 	var eventMap = {};
 
 	return {
@@ -44,7 +44,7 @@ angular.module("mis").service("EventBus", function() {
 	};
 });
 
-angular.module("mis").directive("appLoader", function ($http, $compile, $rootScope, $q, $controller) {
+angular.module("portal").directive("appLoader", function ($http, $compile, $rootScope, $q, $controller) {
 	return function (scope, element, attrs) {
 		var url = attrs.url;
 		var dependencies = attrs.scripts.split(",") || [];
@@ -70,7 +70,7 @@ angular.module("mis").directive("appLoader", function ($http, $compile, $rootSco
 	};
 });
 
-angular.module("mis").controller("Portal", function ($scope, $rootScope) {
+angular.module("portal").controller("Portal", function ($scope, $rootScope) {
 	$scope.$on("purchase", function(evt, arg) {
 
 	});

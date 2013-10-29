@@ -1,4 +1,4 @@
-angular.module("mis").controllerProvider.register("Cart", function ($scope, EventBus) {
+angular.module("order").controllerProvider.register("Cart", function ($scope, EventBus) {
 	$scope.goodsList = [];
 	$scope.price = 0;
 
