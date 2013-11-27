@@ -1,4 +1,4 @@
-angular.module("order").controllerProvider.register("Goods", function ($scope, EventBus) {
+angular.module("mis").controllerProvider.register("Goods", function ($scope, EventBus) {
 	$scope.numOfApple = 0;
 	$scope.numOfOrange = 0;
 	$scope.numOfPear = 0;

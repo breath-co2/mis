@@ -17,8 +17,7 @@
 	<script type="text/javascript" src="js/portal/portal.js"></script>
 </head>
 <body ng-controller="Portal">
-<div>
-	<div class="row">
+	<div class="row col-md-12">
 		<div class="col-md-4">
 			<div class="panel panel-default">
 				<div class="panel-heading">
@@ -55,21 +54,20 @@
 
 					<script>
 						function changeInclude(index) {
-							document.getElementById("ngIncludeDiv").src = "partial/include/" + index + ".html";
+							document.getElementById("ngIncludeDiv").src = "'partial/include/" + index + ".html'";
 						}
 					</script>
 				</div>
 			</div>
 		</div>
 	</div>
-	<div class="row">
-		<div class="col-md-4" app-loader url="partial/goods.html" scripts="js/order/goods.js"></div>
-		<div class="col-md-8" app-loader url="partial/cart.html" scripts="js/order/cart.js"></div>
+	<div class="row col-md-12">
+		<div class="col-md-4" app-loader url="partial/goods.html" module="order" scripts="js/order/goods.js"></div>
+		<div class="col-md-8" app-loader url="partial/cart.html" module="order" scripts="js/order/cart.js"></div>
 	</div>
-	<div class="row">
-		<div class="col-md-6">.col-md-6</div>
-		<div class="col-md-6">.col-md-6</div>
+	<div class="row col-md-12">
+		<div class="col-md-6">aaa</div>
+		<div class="col-md-6">bbb</div>
 	</div>
-</div>
 </body>
 </html>
