@@ -59,7 +59,6 @@ angular.module("mis").directive("appLoader", function ($http, $compile, $rootSco
 				$http.get(url).success(function (result) {
 					element.html(result);
 
-
 					var newScope = scope;
 
 					var controller = $controller("Cart", {$scope:newScope});
@@ -79,5 +78,17 @@ angular.module("mis").controller("Portal", function ($scope, $rootScope) {
 	$scope.user = {
 		name: "Xu.fei",
 		age: 32
+	};
+});
+
+
+angular.module("mis").controller("TestCtrl", function ($scope) {
+	var index = 1;
+	$scope.moduleClick = function(i) {
+		index = i + 1;
+	};
+
+	$scope.getURL = function() {
+		return "partial/include/" + index + ".html";
 	};
 });
