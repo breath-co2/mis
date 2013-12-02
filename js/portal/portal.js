@@ -81,14 +81,20 @@ angular.module("mis").controller("Portal", function ($scope, $rootScope) {
 	};
 });
 
+angular.module("mis").controller("ModuleCtrl", function($scope) {
+	$scope.modules = [
+		"partial/include/1.html",
+		"partial/include/2.html",
+		"partial/include/3.html"
+	];
 
-angular.module("mis").controller("TestCtrl", function ($scope) {
-	var index = 1;
-	$scope.moduleClick = function(i) {
-		index = i + 1;
-	};
+	$scope.newModules = [
+		"partial/profile.html",
+		"partial/goods.html",
+		"partial/cart.html"
+	];
 
-	$scope.getURL = function() {
-		return "partial/include/" + index + ".html";
+	$scope.loadPartial = function(index) {
+		$scope.modules.push($scope.newModules[index]);
 	};
 });

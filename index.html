@@ -40,15 +40,26 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-md-4" ng-include="'partial/profile.html'"></div>
-		<div class="col-md-4">
-			<div class="panel panel-default" ng-controller="TestCtrl">
+		<div class="col-md-8">
+			<div class="panel panel-default" ng-controller="ModuleCtrl">
 				<div class="panel-heading">
 					<h3 class="panel-title">Test</h3>
 				</div>
 				<div class="panel-body">
-					<div ng-include src="getURL()"></div>
-					<button ng-repeat="i in ['1','2','1']" ng-click="moduleClick($index)">{{i}}</button>
+					<button ng-repeat="n in newModules" ng-click="loadPartial($index)">{{n}}</button>
+					<div ng-repeat="m in modules" ng-include src="m"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row col-md-12">
+		<div class="col-md-4" ng-include="'partial/profile.html'"></div>
+		<div class="col-md-8">
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Test</h3>
+				</div>
+				<div class="panel-body">
 				</div>
 			</div>
 		</div>
@@ -56,10 +67,6 @@
 	<div class="row col-md-12">
 		<div class="col-md-4" app-loader url="partial/goods.html" module="order" scripts="js/order/goods.js"></div>
 		<div class="col-md-8" app-loader url="partial/cart.html" module="order" scripts="js/order/cart.js"></div>
-	</div>
-	<div class="row col-md-12">
-		<div class="col-md-6">aaa</div>
-		<div class="col-md-6">bbb</div>
 	</div>
 </body>
 </html>
