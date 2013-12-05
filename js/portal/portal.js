@@ -59,11 +59,9 @@ angular.module("mis").directive("appLoader", function ($http, $compile, $rootSco
 				$http.get(url).success(function (result) {
 					element.html(result);
 
-					var newScope = scope;
+					angular.bootstrap(element, [module]);
 
-					var controller = $controller("Cart", {$scope:newScope});
-
-					$compile(element.contents())(newScope);
+					//$compile(element.contents())(newScope);
 				});
 			});
 		});
