@@ -7,12 +7,10 @@
 		app.routeProvider = $routeProvider;
 		app.filterProvider = $filterProvider;
 		app.provide = $provide;
-
-		// Register routes with the $routeProvider
 	});
 })();
 
-angular.module("mis").service("EventBus", function() {
+angular.module("mis").service("EventBus", function () {
 	var eventMap = {};
 
 	return {
@@ -44,42 +42,57 @@ angular.module("mis").service("EventBus", function() {
 	};
 });
 
-angular.module("mis").directive("appLoader", function ($http, $compile, $rootScope, $q, $controller) {
+angular.module("mis").directive("htmlLoader", function ($http) {
+	return function (scope, element, attrs) {
+		var url = attrs.url;
+		$http.get(url).success(function (result) {
+			element.html(result);
+		});
+	};
+});
+
+angular.module("mis").directive("appLoader", function ($http) {
 	return function (scope, element, attrs) {
 		var module = attrs.module;
 		var url = attrs.url;
-		var dependencies = attrs.scripts.split(",") || [];
+		var scripts = attrs.scripts.split(",") || [];
 
-		var deferred = $q.defer();
-		// Load the dependencies
-		$script(dependencies, function () {
-			// all dependencies have now been loaded by so resolve the promise
-			$rootScope.$apply(function () {
-				deferred.resolve();
+		$script(scripts, function () {
+			scope.$apply(function () {
 				$http.get(url).success(function (result) {
 					element.html(result);
-
 					angular.bootstrap(element, [module]);
-
-					//$compile(element.contents())(newScope);
 				});
 			});
 		});
 	};
 });
 
-angular.module("mis").controller("Portal", function ($scope, $rootScope) {
-	$scope.$on("purchase", function(evt, arg) {
+angular.module("mis").directive("partialLoader", function ($http, $compile) {
+	return function (scope, element, attrs) {
+		var module = attrs.module;
+		var url = attrs.url;
+		var scripts = attrs.scripts.split(",") || [];
 
-	});
+		$script(scripts, function () {
+			scope.$apply(function () {
+				$http.get(url).success(function (result) {
+					element.html(result);
+					$compile(element.contents())(scope);
+				});
+			});
+		});
+	};
+});
 
+angular.module("mis").controller("Portal", function ($scope) {
 	$scope.user = {
 		name: "Xu.fei",
 		age: 32
 	};
 });
 
-angular.module("mis").controller("ModuleCtrl", function($scope) {
+angular.module("mis").controller("ModuleCtrl", function ($scope) {
 	$scope.modules = [
 		"partial/include/1.html",
 		"partial/include/2.html",
@@ -92,7 +105,9 @@ angular.module("mis").controller("ModuleCtrl", function($scope) {
 		"partial/cart.html"
 	];
 
-	$scope.loadPartial = function(index) {
+	$scope.currentIndex = 0;
+
+	$scope.loadPartial = function (index) {
 		$scope.modules.push($scope.newModules[index]);
 	};
 });

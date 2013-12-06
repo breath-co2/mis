@@ -18,6 +18,26 @@
 </head>
 <body ng-controller="Portal">
 	<div class="row col-md-12">
+		<div class="col-md-4" html-loader url="partial/simple.html"></div>
+		<div class="col-md-4" app-loader type="app" url="partial/clock.html" module="widgets" scripts="js/widgets/clock.js"></div>
+		<div class="col-md-4" ng-include="'partial/profile.html'"></div>
+	</div>
+	<div class="row col-md-12">
+		<div class="col-md-12">
+			<div class="panel panel-default" ng-controller="ModuleCtrl">
+				<div class="panel-heading">
+					<h3 class="panel-title">Test</h3>
+				</div>
+				<div class="panel-body">
+					<ul class="nav nav-tabs">
+						<li ng-repeat="n in newModules" ng-click="loadPartial($index)"><a href="#">{{n}}</a></li>
+					</ul>
+					<div class="col-md-4" ng-repeat="m in modules" ng-include src="m"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row col-md-12">
 		<div class="col-md-4">
 			<div class="panel panel-default">
 				<div class="panel-heading">
@@ -39,25 +59,8 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-md-8">
-			<div class="panel panel-default" ng-controller="ModuleCtrl">
-				<div class="panel-heading">
-					<h3 class="panel-title">Test</h3>
-				</div>
-				<div class="panel-body">
-					<button ng-repeat="n in newModules" ng-click="loadPartial($index)">{{n}}</button>
-					<div ng-repeat="m in modules" ng-include src="m"></div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="row col-md-12">
-		<div class="col-md-4" app-loader url="partial/clock.html" module="widgets" scripts="js/widgets/clock.js"></div>
-		<div class="col-md-4" ng-include="'partial/profile.html'"></div>
-	</div>
-	<div class="row col-md-12">
-		<div class="col-md-4" app-loader url="partial/goods.html" module="mis" scripts="js/order/goods.js"></div>
-		<div class="col-md-8" app-loader url="partial/cart.html" module="mis" scripts="js/order/cart.js"></div>
+		<div class="col-md-4" partial-loader type="partial" url="partial/goods.html" scripts="js/order/goods.js"></div>
+		<div class="col-md-4" partial-loader type="partial" url="partial/cart.html" scripts="js/order/cart.js"></div>
 	</div>
 </body>
 </html>
