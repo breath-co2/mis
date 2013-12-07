@@ -5,8 +5,189 @@
 	<link rel="stylesheet" href="http://getbootstrap.com/2.3.2/assets/css/bootstrap.css"/>
 	<script type="text/javascript" src="../lib/angular.min.js"></script>
 	<script type="text/javascript" src="js/wf.js"></script>
+	
+	<style>
+
+		.wizard {
+			position: relative;
+			overflow: hidden;
+			background-color: #f9f9f9;
+			border: 1px solid #d4d4d4;
+			-webkit-border-radius: 4px;
+			-moz-border-radius: 4px;
+			border-radius: 4px;
+			*zoom: 1;
+			-webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+			-moz-box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+			box-shadow: 0 1px 4px rgba(0, 0, 0, 0.065);
+		}
+
+		.wizard:before,
+		.wizard:after {
+			display: table;
+			line-height: 0;
+			content: "";
+		}
+
+		.wizard:after {
+			clear: both;
+		}
+
+		.wizard ul {
+			width: 4000px;
+			padding: 0;
+			margin: 0;
+			list-style: none outside none;
+		}
+
+		.wizard ul.previous-disabled li.complete {
+			cursor: default;
+		}
+
+		.wizard ul.previous-disabled li.complete:hover {
+			color: #468847;
+			cursor: default;
+			background: #f3f4f5;
+		}
+
+		.wizard ul.previous-disabled li.complete:hover .chevron:before {
+			border-left-color: #f3f4f5;
+		}
+
+		.wizard ul li {
+			position: relative;
+			float: left;
+			height: 46px;
+			padding: 0 20px 0 30px;
+			margin: 0;
+			font-size: 16px;
+			line-height: 46px;
+			color: #999999;
+			cursor: default;
+			background: #ededed;
+		}
+
+		.wizard ul li .chevron {
+			position: absolute;
+			top: 0;
+			right: -14px;
+			z-index: 1;
+			display: block;
+			border: 24px solid transparent;
+			border-right: 0;
+			border-left: 14px solid #d4d4d4;
+		}
+
+		.wizard ul li .chevron:before {
+			position: absolute;
+			top: -24px;
+			right: 1px;
+			display: block;
+			border: 24px solid transparent;
+			border-right: 0;
+			border-left: 14px solid #ededed;
+			content: "";
+		}
+
+		.wizard ul li.complete {
+			color: #468847;
+			background: #f3f4f5;
+		}
+
+		.wizard ul li.complete:hover {
+			cursor: pointer;
+			background: #e7eff8;
+		}
+
+		.wizard ul li.complete:hover .chevron:before {
+			border-left: 14px solid #e7eff8;
+		}
+
+		.wizard ul li.complete .chevron:before {
+			border-left: 14px solid #f3f4f5;
+		}
+
+		.wizard ul li.active {
+			color: #3a87ad;
+			background: #f1f6fc;
+		}
+
+		.wizard ul li.active .chevron:before {
+			border-left: 14px solid #f1f6fc;
+		}
+
+		.wizard ul li .badge {
+			margin-right: 8px;
+		}
+
+		.wizard ul li:first-child {
+			padding-left: 20px;
+			border-radius: 4px 0 0 4px;
+		}
+
+		.wizard .actions {
+			position: absolute;
+			right: 0;
+			z-index: 1000;
+			float: right;
+			padding-right: 15px;
+			padding-left: 15px;
+			line-height: 46px;
+			vertical-align: middle;
+			background-color: #e5e5e5;
+			border-left: 1px solid #d4d4d4;
+		}
+
+		.wizard .actions a {
+			margin-right: 8px;
+			font-size: 12px;
+			line-height: 45px;
+		}
+
+		.wizard .actions .btn-prev i {
+			margin-right: 5px;
+		}
+
+		.wizard .actions .btn-next i {
+			margin-left: 5px;
+		}
+
+		.step-content .step-pane {
+			display: none;
+		}
+
+		.step-content .active {
+			display: block;
+		}
+
+		.step-content .active .btn-group .active {
+			display: inline-block;
+		}
+	</style>
 </head>
 <body>
+
+	<div class="wizard">
+		<ul class="steps">
+			<li data-target="#step1" class="active"><span class="badge badge-info">1</span>Step 1<span class="chevron"></span></li>
+			<li data-target="#step2"><span class="badge">2</span>Step 2<span class="chevron"></span></li>
+			<li data-target="#step3"><span class="badge">3</span>Step 3<span class="chevron"></span></li>
+			<li data-target="#step4"><span class="badge">4</span>Step 4<span class="chevron"></span></li>
+			<li data-target="#step5"><span class="badge">5</span>Step 5<span class="chevron"></span></li>
+		</ul>
+		<div class="actions">
+			<button type="button" class="btn btn-mini btn-prev"> <i class="icon-arrow-left"></i>Prev</button>
+			<button type="button" class="btn btn-mini btn-next" data-last="Finish">Next<i class="icon-arrow-right"></i></button>
+		</div>
+	</div>
+	<div class="step-content">
+		<div class="step-pane active" id="step1">This is step 1</div>
+		<div class="step-pane" id="step2">This is step 2</div>
+		<div class="step-pane" id="step3">This is step 3</div>
+		<div class="step-pane" id="step4">This is step 4</div>
+		<div class="step-pane" id="step5">This is step 5</div>
+	</div>
+
 	<div ng-controller="Euclid" ng-init="init()">
 		big integer<input ng-model="a"/>
 		small integer<input ng-model="b"/>
