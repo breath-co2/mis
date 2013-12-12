@@ -2,6 +2,7 @@
 <html ng-app="mis">
 <head>
 	<title></title>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css"/>
 	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.8/angular.min.js"></script>
 	<script type="text/javascript">
@@ -16,28 +17,8 @@
 	<script type="text/javascript" src="js/portal/portal.js"></script>
 </head>
 <body ng-controller="Portal">
-	<div class="row col-md-12">
-		<div class="col-md-4" html-loader url="partial/simple.html"></div>
-		<div class="col-md-4" app-loader type="app" url="partial/clock.html" module="widgets" scripts="js/widgets/clock.js"></div>
-		<div class="col-md-4" ng-include="'partial/profile.html'"></div>
-	</div>
-	<div class="row col-md-12">
+	<div class="col-md-4">
 		<div class="col-md-12">
-			<div class="panel panel-default" ng-controller="ModuleCtrl">
-				<div class="panel-heading">
-					<h3 class="panel-title">Test</h3>
-				</div>
-				<div class="panel-body">
-					<ul class="nav nav-tabs">
-						<li ng-repeat="n in newModules" ng-click="loadPartial($index)"><a href="#">{{n}}</a></li>
-					</ul>
-					<div class="col-md-4" ng-repeat="m in modules" ng-include src="m"></div>
-				</div>
-			</div>
-		</div>
-	</div>
-	<div class="row col-md-12">
-		<div class="col-md-4">
 			<div class="panel panel-default">
 				<div class="panel-heading">
 					<h3 class="panel-title">User Profile</h3>
@@ -58,8 +39,33 @@
 				</div>
 			</div>
 		</div>
-		<div class="col-md-4" partial-loader type="partial" url="partial/goods.html" scripts="js/order/goods.js"></div>
-		<div class="col-md-4" partial-loader type="partial" url="partial/cart.html" scripts="js/order/cart.js"></div>
+		<div class="col-md-12" partial-loader type="partial" url="partial/goods.html" scripts="js/order/goods.js"></div>
+		<div class="col-md-12" partial-loader type="partial" url="partial/cart.html" scripts="js/order/cart.js"></div>
+	</div>
+	<div class="row col-md-8">
+		<div class="row col-md-12">
+			<div class="col-md-4" html-loader url="partial/simple.html"></div>
+			<div class="col-md-4" app-loader type="app" url="partial/clock.html" module="widgets" scripts="js/widgets/clock.js"></div>
+			<div class="col-md-4" ng-include="'partial/profile.html'"></div>
+		</div>
+		<div class="row col-md-12">
+			<div class="panel panel-default" ng-controller="ModuleCtrl">
+				<div class="panel-heading">
+					<h3 class="panel-title">Test</h3>
+				</div>
+				<div class="panel-body">
+					<ul class="nav nav-tabs">
+						<li ng-repeat="m in modules" ng-class="{active:m.selected}" ng-click="switchModule($index)">
+							<a href="#">{{m.title}}<button class="close" type="button" ng-show="m.selected" ng-click="closeModule($index)">×</button></a>
+						</li>
+						<li>
+							<a href="#"> <button class="close" type="button" ng-click="addModule()">+</button></a>
+						</li>
+					</ul>
+					<div ng-repeat="m in modules" ng-include src="m.url" ng-show="m.selected"></div>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

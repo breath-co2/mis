@@ -94,20 +94,51 @@ angular.module("mis").controller("Portal", function ($scope) {
 
 angular.module("mis").controller("ModuleCtrl", function ($scope) {
 	$scope.modules = [
-		"partial/include/1.html",
-		"partial/include/2.html",
-		"partial/include/3.html"
+		{title: "1", url: "partial/include/1.html"},
+		{title: "2", url: "partial/include/2.html"},
+		{title: "3", url: "partial/include/3.html"}
 	];
 
-	$scope.newModules = [
-		"partial/profile.html",
-		"partial/goods.html",
-		"partial/cart.html"
+	var newModules = [
+		{title: "Profile", url: "partial/profile.html"},
+		{title: "Goods", url: "partial/goods.html"},
+		{title: "Cart", url: "partial/cart.html"}
 	];
 
-	$scope.currentIndex = 0;
+	$scope.currentModule = $scope.modules[0];
+	$scope.currentModule.selected = true;
 
-	$scope.loadPartial = function (index) {
-		$scope.modules.push($scope.newModules[index]);
+	$scope.addModule = function () {
+		if (newModules.length > 0) {
+			var newModule = newModules.pop();
+			$scope.modules.push(newModule);
+
+			if ($scope.currentModule) {
+				$scope.currentModule.selected = false;
+			}
+
+			$scope.currentModule = newModule;
+			newModule.selected = true;
+		}
 	};
+
+	$scope.switchModule = function (index) {
+		var newModule = $scope.modules[index];
+
+		if ($scope.currentModule) {
+			$scope.currentModule.selected = false;
+		}
+
+		$scope.currentModule = newModule;
+		newModule.selected = true;
+	};
+
+	$scope.closeModule = function (index) {
+		if ($scope.currentModule === $scope.modules[index]) {
+			$scope.currentModule.selected = false;
+			$scope.currentModule = null;
+		}
+
+		$scope.modules.splice(index, 1);
+	}
 });
