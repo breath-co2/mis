@@ -142,3 +142,33 @@ angular.module("mis").controller("ModuleCtrl", function ($scope) {
 		$scope.modules.splice(index, 1);
 	}
 });
+
+angular.module("mis").controller("Wizard", ["$scope", function ($scope) {
+	$scope.steps = [
+		{title: "Profile", url: "partial/profile.html", selected:true},
+		{title: "Goods", url: "partial/goods.html", selected:false},
+		{title: "Cart", url: "partial/cart.html", selected:false}
+	];
+
+	$scope.currentStep = 0;
+
+	$scope.prev = function () {
+		$scope.steps[$scope.currentStep].selected = false;
+		$scope.currentStep--;
+		$scope.steps[$scope.currentStep].selected = true;
+	};
+
+	$scope.next = function () {
+		$scope.steps[$scope.currentStep].selected = false;
+		$scope.currentStep++;
+		$scope.steps[$scope.currentStep].selected = true;
+	};
+
+	$scope.isFirst = function () {
+		return $scope.currentStep === 0;
+	};
+
+	$scope.isLast = function () {
+		return $scope.currentStep === ($scope.steps.length-1);
+	};
+}]);

@@ -170,7 +170,7 @@
 			</div>
 		</div>
 		<div class="step-content">
-			<div ng-repeat="step in steps" ng-class="{'step-pane active':step.selected, 'step-pane':!step.selected}">{{step.title}}</div>
+			<div ng-repeat="step in steps" ng-include src="step.url" ng-class="{'step-pane active':step.selected, 'step-pane':!step.selected}"></div>
 		</div>
 	</div>
 </div>

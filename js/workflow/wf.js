@@ -228,31 +228,3 @@ wf.controller("Wizard1", function ($scope, StateMachine) {
 		return sm.currentState == sm.finishState;
 	};
 });
-
-wf.controller("Wizard", ["$scope", "StateMachine", function ($scope, StateMachine) {
-	var sm = new StateMachine();
-
-	$scope.steps = [
-		{title: "Step 1", selected:false},
-		{title: "Step 2", selected:true},
-		{title: "Step 3", selected:false}
-	];
-
-	$scope.currentStep = 0;
-
-	$scope.prev = function () {
-		$scope.currentStep--;
-	};
-
-	$scope.next = function () {
-		$scope.currentStep++;
-	};
-
-	$scope.isFirst = function () {
-		return sm.currentState == sm.startState;
-	};
-
-	$scope.isLast = function () {
-		return sm.currentState == sm.finishState;
-	};
-}]);
