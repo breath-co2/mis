@@ -1,10 +1,9 @@
 (function () {
 	var app = angular.module("mis", []);
 
-	app.config(function ($routeProvider, $controllerProvider, $compileProvider, $filterProvider, $provide) {
+	app.config(function ($controllerProvider, $compileProvider, $filterProvider, $provide) {
 		app.controllerProvider = $controllerProvider;
 		app.compileProvider = $compileProvider;
-		app.routeProvider = $routeProvider;
 		app.filterProvider = $filterProvider;
 		app.provide = $provide;
 	});
@@ -42,16 +41,16 @@ angular.module("mis").service("EventBus", function () {
 	};
 });
 
-angular.module("mis").directive("htmlLoader", function ($http) {
+angular.module("mis").directive("htmlLoader", ["$http", function ($http) {
 	return function (scope, element, attrs) {
 		var url = attrs.url;
 		$http.get(url).success(function (result) {
 			element.html(result);
 		});
 	};
-});
+}]);
 
-angular.module("mis").directive("appLoader", function ($http) {
+angular.module("mis").directive("appLoader", ["$http", "$compile", function ($http) {
 	return function (scope, element, attrs) {
 		var module = attrs.module;
 		var url = attrs.url;
@@ -60,15 +59,16 @@ angular.module("mis").directive("appLoader", function ($http) {
 		$script(scripts, function () {
 			scope.$apply(function () {
 				$http.get(url).success(function (result) {
-					element.html(result);
-					angular.bootstrap(element, [module]);
+					var elem = angular.element(result);
+					angular.bootstrap(elem, [module]);
+					element.append(elem);
 				});
 			});
 		});
 	};
-});
+}]);
 
-angular.module("mis").directive("partialLoader", function ($http, $compile) {
+angular.module("mis").directive("partialLoader", ["$http", "$compile", function ($http, $compile) {
 	return function (scope, element, attrs) {
 		var module = attrs.module;
 		var url = attrs.url;
@@ -83,7 +83,7 @@ angular.module("mis").directive("partialLoader", function ($http, $compile) {
 			});
 		});
 	};
-});
+}]);
 
 angular.module("mis").controller("Portal", function ($scope) {
 	$scope.user = {
