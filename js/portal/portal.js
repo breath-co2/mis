@@ -41,11 +41,33 @@ angular.module("mis").service("EventBus", function () {
 	};
 });
 
+angular.module("mis").service("ScriptLoader", ["http", "$q", function($http, $q) {
+	var scriptMap = {};
+
+	return {
+		load: function(scripts, callback) {
+			var requests = [];
+			for (var i=0; i<scripts.length; i++) {
+				if (!scriptMap[scripts[i]]) {
+					requests.push($http.get(scripts[i]));
+				}
+			}
+
+			$q.all(requests).then(function(results) {
+				for (var j=0; j<results.length; j++) {
+				}
+				callback();
+			});
+		}
+	};
+}]);
+
 angular.module("mis").directive("htmlLoader", ["$http", function ($http) {
 	return function (scope, element, attrs) {
 		var url = attrs.url;
 		$http.get(url).success(function (result) {
-			element.html(result);
+			var newElement = angular.element(result);
+			element.append(newElement);
 		});
 	};
 }]);
