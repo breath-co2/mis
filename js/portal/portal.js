@@ -78,6 +78,13 @@ angular.module("mis").directive("appLoader", ["$http", "$compile", function ($ht
 		var url = attrs.url;
 		var scripts = attrs.scripts.split(",") || [];
 
+		try {
+			var m = angular.module(module);
+		}
+		catch (ex) {
+			angular.module(module, []);
+		}
+
 		$script(scripts, function () {
 			scope.$apply(function () {
 				$http.get(url).success(function (result) {

@@ -1,5 +1,3 @@
-angular.module("widgets", []);
-
 angular.module("widgets").controller("ClockCtrl", function($timeout, $scope) {
 	$scope.now = new Date();
 	updateLater();

@@ -1,0 +1,27 @@
+<div ng-controller="TodoCtrl" class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">I am an external application!</h3>
+	</div>
+	<div class="panel-body">
+		<span>{{remaining()}} of {{todos.length}} remaining</span>
+		[ <a href="" ng-click="archive()">archive</a> ]
+		<ul class="unstyled">
+			<li ng-repeat="todo in todos">
+				<input type="checkbox" ng-model="todo.done">
+				<span class="done-{{todo.done}}">{{todo.text}}</span>
+			</li>
+		</ul>
+		<form ng-submit="addTodo()">
+			<input type="text" ng-model="todoText"  size="30"
+			       placeholder="add new todo here">
+			<input class="btn-primary" type="submit" value="add">
+		</form>
+	</div>
+
+	<style>
+		.done-true {
+			text-decoration: line-through;
+			color: grey;
+		}
+	</style>
+</div>
