@@ -1,13 +1,102 @@
-MIS系统全称是管理信息系统，代表着一大类传统软件，包括办公自动化，资源管理，业务受理，金融结算等各大方向。曾经这些系统都是C/S架构的，但是最近10年，大部分都迁移到B/S架构了。
+基于AngularJS构建Web应用门户
+====
+
+在应用型的Web系统中，有很大一类是MIS系统，MIS全称是管理信息系统，代表着一大类传统软件，包括办公自动化，资源管理，业务受理，金融结算等各大方向。曾经这些系统都是C/S架构的，但是最近10年，大部分都迁移到B/S架构了。
 
 对B/S系统的架构有很多文章谈，但一般都集中在后端架构，很少有谈前端的，更少细致深入谈前端架构的，这个系列文章，就是打算作一下尝试，对每个细节，也尽量会给一些具体实现方式的建议。
 
+本文示例代码使用的框架为AngularJS，版本为1.2.5。
 
-#1. 菜单的集成
+#1. 应用门户的规划
 
-菜单集成是一个MIS系统最基础的需求，在B/S模式下，最简单的菜单集成方式是iframe，在门户界面放置iframe，然后链接到具体菜单的页面，每当主菜单的项被点击的时候，设置这个iframe地址即可。也可以动态创建选项卡，在每个选项卡里面放置一个新的iframe，为它设置链接为当前点击的菜单项url。
+企业应用门户的设计，其实是一个很考验规划水准的事。因为它首先要集成别人的功能部件，还要考虑自己的功能部件如何被别人集成。它的设计思路直接影响到一大堆代码按照什么规范进行开发。挂在这个门户上的业务模块，有的很简单，不会影响别人，有的可能会影响别人，要想个办法把它隔离起来，还有的本身就要跟别人通讯。
 
-这种方式是很简便，但有一些弊端，比如说，被集成的菜单界面自身功能要完整，即使没有门户界面，它也要能运行起来，这就要求它自身就包含所依赖的库，这么一来，每个界面都加载了一套库，实际上这是公共的，没有必要每个界面都加载，网络传输这个可以通过缓存来解决，但每个库自己在当前页面构建的一套内存环境，是没法优化的。
+我们看看一个典型的场景，一个工作台，或者说门户界面，上面能够放很多小部件，类似iGoogle那样，用户可以任意加已有的部件，这些部件都是基于某种约定，由第三方开发人员完成，该怎么实现呢？
+
+##1.1. 异构的第三方部件
+
+在B/S模式下，最简单的部件集成方式是iframe，每个功能部件都以iframe的方式被集成起来。这种方式是很简便，但有一些弊端，比如说，被集成的部件界面自身功能要完整，即使没有门户界面，它也要能运行起来，这就要求它自身就包含所依赖的库，这么一来，每个界面都加载了一套库，实际上这是公共的，没有必要每个界面都加载，网络传输这个可以通过缓存来解决，但每个库自己在当前页面构建的一套内存环境，是没法优化的。
+
+所以，使用iframe来做集成，只适合那些异构系统，这种场景下，我们无法控制被集成方的代码编写方式，比如说要在门户里集成一个第三方的天气widget，基本只能通过这种方式。
+
+这种集成的部件，如果有跟门户自身或者其他部件有通讯的需求，不考虑低端浏览器的话，一般可以用postMessage做，不管部件跟门户是否同域，都能够执行。
+
+#1.2. 简单逻辑的HTML片段
+
+如果部件的开发过程能够由我们控制，也就是说，可以由门户提供一些开发规范，让部件开发人员在这些规范的基础上进行开发，能够优化的地方就很多了。
+
+一个部件，可以有界面、逻辑、样式，这些都可以分别动态加载出来，比如HTML片段可以ng-include或者$get过来append，js文件可以require，css可以行间也可以动态加rule，因为这些部件是要跟我们主界面在同一个页面作用域内，所以要尽量营造隔离的环境。我们从最简单的看起吧，先看只有界面的。
+
+只有界面的情况很好办，它直接拿来放在某容器里就可以了，互相影响不到，在Angular里面直接搞个ng-include把它包含到主界面就可以了。
+
+    <div ng-include src="'partial/simple.html'"></div>
+
+simple.html的源码：
+
+    <div class="panel panel-default">
+    	<div class="panel-heading">
+    		<h3 class="panel-title">Simple HTML Loader</h3>
+    	</div>
+    	<div class="panel-body">
+    		<span>I am a static HTML partial file.</span>
+    	</div>
+    </div>
+
+好了，我们来看稍微复杂点的，引入的代码有了行间逻辑。什么是行间逻辑呢？意思是这一段JavaScript逻辑只作用于当前界面片段，出于某些原因，这些逻辑必须紧跟当前的界面，需要在全页面加载出来之前就能执行，比如某些搜索，只要搜索框一出来就应当能操作，这就是一种典型的需求。
+
+简单起见，我们只在这个逻辑里放一个alert，只要能执行到，就算成功了。
+
+inlinelogic.html
+
+    <div class="panel panel-default">
+    	<div class="panel-heading">
+    		<h3 class="panel-title">Simple HTML with inline logic</h3>
+    	</div>
+    	<div class="panel-body">
+    		<input type="button" value="click me" onclick="greet()"/>
+    		<script type="text/javascript">
+    			function greet() {
+    				alert("I am from inline logic!");
+    			}
+    		</script>
+    	</div>
+    </div>
+
+还是这么写：
+
+    <div ng-include src="'partial/inlinelogic.html'"></div>
+
+唔？这次发现不能运行了。为什么呢？
+
+本质原因，是把某HTML片段用innerHTML方式加入DOM的时候，如果其中带有JavaScript，这段代码不会被执行，但是如果有script标签，通过appendChild的方式加到DOM里，是可以执行的，这个过程用ng-include没法做，所以我们来自己写个指令：
+
+    angular.module("mis").directive("htmlLoader", ["$http", function ($http) {
+    	return function (scope, element, attrs) {
+    		var url = attrs.url;
+    		$http.get(url).success(function (result) {
+    			var newElement = angular.element(result);
+    
+    			var scripts = newElement[0].getElementsByTagName("script");
+    			var deferredScripts = [];
+    			for (var i=0; i<scripts.length; i++) {
+    				deferredScripts.push(scripts[i].parentElement.removeChild(scripts[i]));
+    			}
+    
+    			element.append(newElement);
+    			for (var j=0; j<deferredScripts.length; j++) {
+    				var script = document.createElement("script")
+    				script.innerHTML = deferredScripts[j].innerHTML;
+    				newElement[0].appendChild(script);
+    			}
+    		});
+    	};
+    }]);
+
+然后在使用的时候：
+
+    <div html-loader url="partial/inlinelogic.html"></div>
+
+再看看运行结果，已经可以了。
 
 现在我们有一些办法来实现这个功能，但是消除带来的缺陷。比如说，AngularJS框架的ng-include和ng-view功能，就很适合做这个。如果使用ng-view，需要配合路由功能来使用。
 

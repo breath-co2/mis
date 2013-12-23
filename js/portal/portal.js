@@ -67,7 +67,19 @@ angular.module("mis").directive("htmlLoader", ["$http", function ($http) {
 		var url = attrs.url;
 		$http.get(url).success(function (result) {
 			var newElement = angular.element(result);
+
+			var scripts = newElement[0].getElementsByTagName("script");
+			var deferredScripts = [];
+			for (var i=0; i<scripts.length; i++) {
+				deferredScripts.push(scripts[i].parentElement.removeChild(scripts[i]));
+			}
+
 			element.append(newElement);
+			for (var j=0; j<deferredScripts.length; j++) {
+				var script = document.createElement("script")
+				script.innerHTML = deferredScripts[j].innerHTML;
+				newElement[0].appendChild(script);
+			}
 		});
 	};
 }]);
