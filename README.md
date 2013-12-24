@@ -96,7 +96,209 @@ inlinelogic.html
 
     <div html-loader url="partial/inlinelogic.html"></div>
 
-再看看运行结果，已经可以了。
+再看看运行结果，已经可以了。我们的html loader指令也可以用于加载无逻辑的HTML片段，细节部分可能还有需要完善的，大致思路是这样。
+
+##1.3. 同构的界面部件
+
+什么是同构的界面部件呢？意思是这个部件的开发过程采用了与门户一样的开发技术和规范，在我们这里，就是指使用了Angular框架。
+
+###1.3.1. 纯界面模板部件
+
+我们知道，Angular框架中有controller，service等部分，对于一个部件来说，它可能有这些部分，也可能没有，如果没有的话，那是非常简单的，这时候这个界面部件就退化成界面模板，只需要用ng-include把这个部件引入到主界面中，就可以正常运行了。
+
+这种情况，跟刚才1.2节中提到的部分还是有区别的，差异在于，这个界面模板里可以带有一些Angular的模板语法，比如直接引用已经在主界面的$scope或者$rootScope上存在的变量，也可以使用已经被主界面加载过的controller和factory等定义。
+
+举例来说，如果门户自带了一个用户模型，里面存放了用户的个人资料和相关操作，在部件里也是可以引入的，就像这样：
+
+    <div class="panel panel-default">
+    	<div class="panel-heading">
+    		<h3 class="panel-title">Greet</h3>
+    	</div>
+    	<div class="panel-body">
+    		Hello  <span ng-bind="user.name"></span>
+    	</div>
+    </div>
+
+这个界面被用ng-include的方式引入门户主界面就可以直接使用了。这是很简单的情况，我们再看看复杂一些的。
+
+###1.3.2. 有独立命名空间的部件
+
+我们知道，在一个复杂应用中编写JavaScript的话，最基本的常识就是避免全局变量，在Angular体系中，还需要作些特殊的考虑。我们知道，Angular里面，第一级组织单元是module，但它这个module的概念跟AMD那种module的不同，如果说AMD的module相当于Java Class的级别，Angular的要相当于package了。
+
+假设有这么一个部件，它的逻辑拥有独立的命名空间，比如是一个时钟，它的module与门户的module毫无关系，代码如下：
+
+clock.js
+
+    angular.module("widgets", []);
+    
+    angular.module("widgets").controller("ClockCtrl", function($timeout, $scope) {
+    	$scope.now = new Date();
+    	updateLater();
+    
+    	var timeoutId;
+    	function updateLater() {
+    		$scope.now = new Date();
+    		timeoutId = $timeout(function() {
+    			updateLater();
+    		}, 1000);
+    	}
+    });
+
+另有一个界面用于展示:
+
+clock.html
+
+    <div ng-controller="ClockCtrl" class="panel panel-default">
+    	<div class="panel-heading">
+    		<h3 class="panel-title">I am an external application!</h3>
+    	</div>
+    	<div class="panel-body" ng-bind="now"></div>
+    </div>
+    
+很显然，我们刚才的html loader已经没法使它正常运行了，而用ng-include的方式，没法为它引入所依赖的js文件，也不能执行。如果把clock.js放在门户里加载，也不合适，因为门户需要独立于部件，不应有所依赖，这种情况怎么办呢？
+
+我们来改进一下刚才的html loader，使得它具有载入js代码的功能，取名为app loader。
+
+在Angular的多模块解决方案中，一般用$script来做JavaScript文件的异步加载，使用起来也非常简单，可以加载一个数组的js代码，然后执行一个回调函数。
+
+我们期望的写法是这样，指定部件主界面模版的url，JavaScript代码路径，还有所在的模块，剩下的就是要在app loader这个directive里要做的事情了。
+
+    <div app-loader url="partial/clock.html" module="widgets" scripts="js/widgets/clock.js"></div>
+
+Angular的bootstrap函数可以用于把独立的ng-app初始化一遍，对于这种情况，正合适。
+
+    angular.module("mis").directive("appLoader", ["$http", "$compile", function ($http) {
+    	return function (scope, element, attrs) {
+    		var module = attrs.module;
+    		var url = attrs.url;
+    		var scripts = attrs.scripts.split(",") || [];
+
+    		$script(scripts, function () {
+    			scope.$apply(function () {
+    				$http.get(url).success(function (result) {
+    					var elem = angular.element(result);
+    					angular.bootstrap(elem, [module]);
+    					element.append(elem);
+    				});
+    			});
+    		});
+    	};
+    }]); 
+    
+现在看起来，我们的加载方案很有点像样了。再继续考虑更复杂的情况。
+
+比如说，我们还有个代办事宜的widget，但是它也是位于widgets命名空间下的，代码从Angular官网抄来：
+
+todo.js
+
+    angular.module("widgets", []);
+
+    angular.module("widgets").controller("TodoCtrl", function ($scope) {
+    	$scope.todos = [
+    		{text:'learn angular', done:true},
+    		{text:'build an angular app', done:false}];
+    
+    	$scope.addTodo = function() {
+    		$scope.todos.push({text:$scope.todoText, done:false});
+    		$scope.todoText = '';
+    	};
+    
+    	$scope.remaining = function() {
+    		var count = 0;
+    		angular.forEach($scope.todos, function(todo) {
+    			count += todo.done ? 0 : 1;
+    		});
+    		return count;
+    	};
+    
+    	$scope.archive = function() {
+    		var oldTodos = $scope.todos;
+    		$scope.todos = [];
+    		angular.forEach(oldTodos, function(todo) {
+    			if (!todo.done) $scope.todos.push(todo);
+    		});
+    	};
+    });
+
+todo.html
+
+    <div ng-controller="TodoCtrl" class="panel panel-default">
+    	<div class="panel-heading">
+    		<h3 class="panel-title">I am an external application!</h3>
+    	</div>
+    	<div class="panel-body">
+    		<span>{{remaining()}} of {{todos.length}} remaining</span>
+    		[ <a href="" ng-click="archive()">archive</a> ]
+    		<ul class="unstyled">
+    			<li ng-repeat="todo in todos">
+    				<input type="checkbox" ng-model="todo.done">
+    				<span class="done-{{todo.done}}">{{todo.text}}</span>
+    			</li>
+    		</ul>
+    		<form ng-submit="addTodo()">
+    			<input type="text" ng-model="todoText"  size="30"
+    			       placeholder="add new todo here">
+    			<input class="btn-primary" type="submit" value="add">
+    		</form>
+    	</div>
+    
+    	<style>
+    		.done-true {
+    			text-decoration: line-through;
+    			color: grey;
+    		}
+    	</style>
+    </div>
+
+它当然单独也是可以运行的。注意到刚才的todo.js里，第一句就是widgets这个module的声明，如果在门户中同时加载clock和todo，就会出问题，因为对widgets这个module声明了两次，怎么办呢？
+
+我们想到把module的声明放在directive里，如果未声明这个module，就声明一下，这样，在部件里不用写module的声明了，于是，app loader的代码变成了这样：
+
+    angular.module("mis").directive("appLoader", ["$http", "$compile", function ($http) {
+    	return function (scope, element, attrs) {
+    		var module = attrs.module;
+    		var url = attrs.url;
+    		var scripts = attrs.scripts.split(",") || [];
+    
+    		try {
+    			var m = angular.module(module);
+    		}
+    		catch (ex) {
+    			angular.module(module, []);
+    		}
+    
+    		$script(scripts, function () {
+    			scope.$apply(function () {
+    				$http.get(url).success(function (result) {
+    					var elem = angular.element(result);
+    					angular.bootstrap(elem, [module]);
+    					element.append(elem);
+    				});
+    			});
+    		});
+    	};
+    }]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 现在我们有一些办法来实现这个功能，但是消除带来的缺陷。比如说，AngularJS框架的ng-include和ng-view功能，就很适合做这个。如果使用ng-view，需要配合路由功能来使用。
 
@@ -107,6 +309,7 @@ inlinelogic.html
 	<div ng-include src="'views/sidepanel.html'"></div>
 
 这句代码非常简单，src所指向的界面片段将被直接包含进来，跟直接写在主界面中所表现出来的行为完全一致。
+
 
 我们来看看如果用路由，该如何实现这个场景。
 
