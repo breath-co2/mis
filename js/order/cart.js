@@ -1,4 +1,4 @@
-angular.module("mis").controllerProvider.register("Cart", function ($scope, EventBus) {
+angular.module("mis").controller("CartCtrl", ["$scope", "EventBus", function ($scope, EventBus) {
 	$scope.goodsList = [];
 	$scope.price = 0;
 
@@ -11,4 +11,4 @@ angular.module("mis").controllerProvider.register("Cart", function ($scope, Even
 		});
 		$scope.price = price;
 	});
-});
+}]);

@@ -1,4 +1,4 @@
-angular.module("mis").controllerProvider.register("Goods", function ($scope, EventBus) {
+angular.module("mis").controller("GoodsCtrl",  ["$scope", "EventBus", function ($scope, EventBus) {
 	$scope.numOfApple = 0;
 	$scope.numOfOrange = 0;
 	$scope.numOfPear = 0;
@@ -20,4 +20,4 @@ angular.module("mis").controllerProvider.register("Goods", function ($scope, Eve
 			price: 3
 		}]});
 	}
-});
+}]);

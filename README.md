@@ -7,13 +7,11 @@
 
 本文示例代码使用的框架为AngularJS，版本为1.2.5。
 
-#1. 应用门户的规划
-
 企业应用门户的设计，其实是一个很考验规划水准的事。因为它首先要集成别人的功能部件，还要考虑自己的功能部件如何被别人集成。它的设计思路直接影响到一大堆代码按照什么规范进行开发。挂在这个门户上的业务模块，有的很简单，不会影响别人，有的可能会影响别人，要想个办法把它隔离起来，还有的本身就要跟别人通讯。
 
 我们看看一个典型的场景，一个工作台，或者说门户界面，上面能够放很多小部件，类似iGoogle那样，用户可以任意加已有的部件，这些部件都是基于某种约定，由第三方开发人员完成，该怎么实现呢？
 
-##1.1. 异构的第三方部件
+#1. 异构的第三方部件
 
 在B/S模式下，最简单的部件集成方式是iframe，每个功能部件都以iframe的方式被集成起来。这种方式是很简便，但有一些弊端，比如说，被集成的部件界面自身功能要完整，即使没有门户界面，它也要能运行起来，这就要求它自身就包含所依赖的库，这么一来，每个界面都加载了一套库，实际上这是公共的，没有必要每个界面都加载，网络传输这个可以通过缓存来解决，但每个库自己在当前页面构建的一套内存环境，是没法优化的。
 
@@ -21,7 +19,7 @@
 
 这种集成的部件，如果有跟门户自身或者其他部件有通讯的需求，不考虑低端浏览器的话，一般可以用postMessage做，不管部件跟门户是否同域，都能够执行。
 
-#1.2. 简单逻辑的HTML片段
+#2. 简单逻辑的HTML片段
 
 如果部件的开发过程能够由我们控制，也就是说，可以由门户提供一些开发规范，让部件开发人员在这些规范的基础上进行开发，能够优化的地方就很多了。
 
@@ -98,15 +96,15 @@ inlinelogic.html
 
 再看看运行结果，已经可以了。我们的html loader指令也可以用于加载无逻辑的HTML片段，细节部分可能还有需要完善的，大致思路是这样。
 
-##1.3. 同构的界面部件
+#3. 同构的界面部件
 
 什么是同构的界面部件呢？意思是这个部件的开发过程采用了与门户一样的开发技术和规范，在我们这里，就是指使用了Angular框架。
 
-###1.3.1. 纯界面模板部件
+##3.1. 纯界面模板部件
 
 我们知道，Angular框架中有controller，service等部分，对于一个部件来说，它可能有这些部分，也可能没有，如果没有的话，那是非常简单的，这时候这个界面部件就退化成界面模板，只需要用ng-include把这个部件引入到主界面中，就可以正常运行了。
 
-这种情况，跟刚才1.2节中提到的部分还是有区别的，差异在于，这个界面模板里可以带有一些Angular的模板语法，比如直接引用已经在主界面的$scope或者$rootScope上存在的变量，也可以使用已经被主界面加载过的controller和factory等定义。
+这种情况，跟刚才第2节中提到的部分还是有区别的，差异在于，这个界面模板里可以带有一些Angular的模板语法，比如直接引用已经在主界面的$scope或者$rootScope上存在的变量，也可以使用已经被主界面加载过的controller和factory等定义。
 
 举例来说，如果门户自带了一个用户模型，里面存放了用户的个人资料和相关操作，在部件里也是可以引入的，就像这样：
 
@@ -121,7 +119,7 @@ inlinelogic.html
 
 这个界面被用ng-include的方式引入门户主界面就可以直接使用了。这是很简单的情况，我们再看看复杂一些的。
 
-###1.3.2. 有独立命名空间的部件
+##3.2. 有独立命名空间的部件
 
 我们知道，在一个复杂应用中编写JavaScript的话，最基本的常识就是避免全局变量，在Angular体系中，还需要作些特殊的考虑。我们知道，Angular里面，第一级组织单元是module，但它这个module的概念跟AMD那种module的不同，如果说AMD的module相当于Java Class的级别，Angular的要相当于package了。
 
@@ -266,7 +264,7 @@ todo.html
     		catch (ex) {
     			angular.module(module, []);
     		}
-    
+     
     		$script(scripts, function () {
     			scope.$apply(function () {
     				$http.get(url).success(function (result) {
@@ -279,82 +277,223 @@ todo.html
     	};
     }]);
 
+通过一个try语句，我们在未声明module的情况下，动态声明了一个，这样，这两个widget就可以同时挂接在门户上了。
 
+##3.3 位于门户命名空间下的部件
 
+在3.2节中提到的这些部件，命名空间都与门户不同，那么，如果这些部件本身就位于门户的命名空间内，应当如何处理呢？
 
+我们来写一个商品订购部件的示例代码：
 
+goods.js
 
+    angular.module("mis").controller("GoodsCtrl",  ["$scope", "EventBus", function ($scope, EventBus) {
+    	$scope.numOfApple = 0;
+    	$scope.numOfOrange = 0;
+    	$scope.numOfPear = 0;
+    
+    	$scope.submit = function() {
+    		//todo
+    	}
+    }]);
 
+goods.html
 
+    <div ng-controller="GoodsCtrl" class="panel panel-default">
+    	<div class="panel-heading">
+    		<h3 class="panel-title">Goods List</h3>
+    	</div>
+    	<div class="panel-body">
+    		<form role="form">
+    			<div class="form-group">
+    				<label>Apple</label>
+    				<input type="number" ng-model="numOfApple" min="0" class="form-control"/>
+    			</div>
+    			<div class="form-group">
+    				<label>Orange</label>
+    				<input type="number" ng-model="numOfOrange" min="0" class="form-control"/>
+    			</div>
+    			<div class="form-group">
+    				<label>Pear</label>
+    				<input type="number" ng-model="numOfPear" min="0" class="form-control"/>
+    			</div>
+    			<div class="form-group">
+    				<button ng-click="submit()" class="btn">submit</button>
+    			</div>
+    		</form>
+    	</div>
+    </div>
 
+代码很简单，没什么特别的，先不考虑提交按钮要做的事情。
 
+试试用刚才的app loader加载这个吧：
 
+    <div app-loader url="partial/goods.html" scripts="js/order/goods.js" module="mis"></div>
 
+结果是不行的，为什么呢？因为我们之前用angular.bootstrap来初始化新的module，不管是clock还是todo，都是挂在MIS门户下的，并且，这两个widget没有上下级关系，所以用bootstrap没有问题。但是现在的情况下，因为门户自身已经在mis命名空间下bootstrap过了，我们又搞个新的DOM结构，还用同一个命名空间来bootstrap它，然后放在原先的DOM树下，所以出问题了。
 
+对于这种在弄个新的指令吧，叫partial loader。注意到在所有的Angular指导中，在同一module下动态加入新DOM，都是用$compile来做，我们也不例外：
 
+    angular.module("mis").directive("partialLoader", ["$http", "$compile", function ($http, $compile) {
+    	return function (scope, element, attrs) {
+    		var module = attrs.module;
+    		var url = attrs.url;
+    		var scripts = attrs.scripts.split(",") || [];
+    
+    		$script(scripts, function () {
+    			scope.$apply(function () {
+    				$http.get(url).success(function (result) {
+    					element.html(result);
+    					$compile(element.contents())(scope);
+    				});
+    			});
+    		});
+    	};
+    }]);
 
+现在我们使用的时候不必显式指定module了：
 
+    <div partial-loader url="partial/goods.html" scripts="js/order/goods.js"></div>
 
+一运行，还是不行，报错了，说GoodsCtrl没有找到，为什么？
 
+来看看这篇文章吧：[lazy-loading-in-angularjs](http://ify.io/lazy-loading-in-angularjs/ "")，它给我们解释了原理，也提供了解决办法，所以可以借用。我们只要在MIS这个module初始化的时候加这么一段配置就可以了：
 
-
-
-
-现在我们有一些办法来实现这个功能，但是消除带来的缺陷。比如说，AngularJS框架的ng-include和ng-view功能，就很适合做这个。如果使用ng-view，需要配合路由功能来使用。
-
-一条功能菜单，首先必须是有界面的，这个界面可以是html partial，只有html的其中一个片段，没有头尾，除此之外，绝大多数还需要有逻辑代码，在AngularJS中，体现为controller，service等。
-
-考虑到MIS系统一般比较庞大，这两块东西都是要做按需载入的，html的动态载入比较简单，就$http.get获取过来，然后设置到界面某个地方的innerHTML完事，但是它上面绑定的controller就有些麻烦了。我们还是先看简单的吧，只有html的情况如何处理。
-
-	<div ng-include src="'views/sidepanel.html'"></div>
-
-这句代码非常简单，src所指向的界面片段将被直接包含进来，跟直接写在主界面中所表现出来的行为完全一致。
-
-
-我们来看看如果用路由，该如何实现这个场景。
-
-	var todoApp = angular.module('todoApp', [])
-		.config(['$routeProvider', function($routeProvider) {
-		$routeProvider
-			.when('/users', 
-				{templateUrl: 'users.html', controller: 'UsersCtrl'}
-			)
-			.when('/todos', 
-				{templateUrl: 'todos.html', controller: 'TodoCtrl' }
-			)
-			.otherwise({ redirectTo: '/users' });
-			}]);
-
-	todoApp.controller('UsersCtrl', function($scope) {
-		$scope.users = [];
+	app.config(function ($controllerProvider) {
+		app.controller = $controllerProvider.register;
 	});
 
-	todoApp.controller('TodoCtrl', function($scope) {
-		$scope.todos = [];
-	});
+现在，我们的商品列表部件就能跑起来了。
 
-HTML界面里加上这句即可：
+#4. 文件的缓存
 
-	<div ng-view></div>
+#5. 部件的通信
 
-这样，我们在url上改变路径，就可以动态改变这个view，加载对应的partial界面。
+门户与部件，部件之间都可能会有通信的需求。在第一部分异构部件的集成中，我们已经提到采用iframe的方式集成部件，可以使用postMessage的方式做通信。如果部件也是使用Angular体系，应当如何处理它们的通信呢？
 
-这么做有什么弊端呢？我们注意到，controller必须先加载出来，如果菜单模块很多，这么做就不太合适了，我们还是需要一个缓加载的机制，所幸AngularJS也帮我们考虑到了，他提供一个机制让加载路由之前可以插入自己的代码，我们可以在这里引入我们的控制器。
+## 5.1. 同一命名空间下的通信
 
+为了演示，我们再创建一个部件叫做cart，功能是展示之前在goods部件中订购的商品。当用户在goods部件中订购商品之后，应当在cart部件中展示这些已订购商品，并且计算它们的总价。
 
-还是有问题，因为在界面中只能存在一个ng-view，假如我们不是每次只想打开一个菜单界面，而是每一个作为选项卡打开，该怎么办呢？好像AngularJS没有为我们考虑这个问题，不要紧，毛主席教导我们：自己动手，丰衣足食。
+很显然goods跟cart部件分别有不同的控制器，在Angular里，不同控制器的通信方式有多种，可以参见这篇总结：[控制器之间的通信](https://github.com/joeylin/angular-note/blob/master/controller-communication.md "")。
 
-我们来看看加载界面的过程。
+因为我们的部件之间不存在作用域继承关系，所以通过一个服务或者是$rootScope来作通信比较好，我们创建一个服务叫做事件总线：
 
-#2. 界面的模块化
+    angular.module("mis").service("EventBus", function () {
+    	var eventMap = {};
+    
+    	return {
+    		on: function (eventType, handler) {
+    			//multiple event listener
+    			if (!eventMap[eventType]) {
+    				eventMap[eventType] = [];
+    			}
+    			eventMap[eventType].push(handler);
+    		},
+    
+    		off: function (eventType, handler) {
+    			for (var i = 0; i < eventMap[eventType].length; i++) {
+    				if (eventMap[eventType][i] === handler) {
+    					eventMap[eventType].splice(i, 1);
+    					break;
+    				}
+    			}
+    		},
+    
+    		fire: function (event) {
+    			var eventType = event.type;
+    			if (eventMap[eventType]) {
+    				for (var i = 0; i < eventMap[eventType].length; i++) {
+    					eventMap[eventType][i](event);
+    				}
+    			}
+    		}
+    	};
+    });
 
-第一部分的内容涉及了一个主题，就是界面的模块化。我们注意到，在这种方式下，菜单界面不再是独立可运行的，而是一个部件，需要依托主界面来运行，这实际上就是一种模块化。前端的模块化，在界面来说，是以部件模版这种方式存在，在JavaScript来说，是类似AngularJS提供的controller和service这样的定义方式。
+接着，把刚才的商品列表的提交代码完善一下：
 
-#3. 门户的可定制化
+goods.js
 
-有了界面部件，我们也就可以很容易实现门户的定制化了。
+    angular.module("mis").controller("GoodsCtrl",  ["$scope", "EventBus", function ($scope, EventBus) {
+    	$scope.numOfApple = 0;
+    	$scope.numOfOrange = 0;
+    	$scope.numOfPear = 0;
+    
+    	$scope.submit = function() {
+    		EventBus.fire({
+    			type:"purchase",
+    			data: [{
+    			type: "Apple",
+    			number: $scope.numOfApple,
+    			price: 5
+    		}, {
+    			type: "Orange",
+    			number: $scope.numOfOrange,
+    			price: 4
+    		}, {
+    			type: "Pear",
+    			number: $scope.numOfPear,
+    			price: 3
+    		}]});
+    	}
+    }]);
 
-#4. 界面流
+我们可以看到，在商品提交的时候，往这个事件总线上发了一个purchase事件，带有所购买的商品种类和价值数据，然后，在购物车里面如何处理呢？
+
+购物车部件的代码如下：
+
+cart.html
+
+    <div class="panel panel-default" ng-controller="CartCtrl">
+    	<div class="panel-heading">
+    		<h3 class="panel-title">Shopping Cart</h3>
+    	</div>
+    	<div class="panel-body">
+    		<table class="table table-hover table-bordered">
+    			<thead>
+    				<tr>
+    					<th>Type</th>
+    					<th>Number</th>
+    					<th>Price</th>
+    				</tr>
+    			</thead>
+    			<tbody>
+    				<tr ng-repeat="good in goodsList">
+    					<td ng-bind="good.type"></td>
+    					<td ng-bind="good.number"></td>
+    					<td ng-bind="good.price"></td>
+    				</tr>
+    			</tbody>
+    			<tfoot>
+    				<div>
+    					Hello, <span ng-bind="user.name"></span>, total price is <span ng-bind="price"></span>.
+    				</div>
+    			</tfoot>
+    		</table>
+    	</div>
+    </div>
+
+cart.js
+
+    angular.module("mis").controller("CartCtrl", ["$scope", "EventBus", function ($scope, EventBus) {
+    	$scope.goodsList = [];
+    	$scope.price = 0;
+    
+    	EventBus.on("purchase", function(evt) {
+    		$scope.goodsList = evt.data;
+    
+    		var price = 0;
+    		angular.forEach($scope.goodsList, function(item) {
+    			price += item.number * item.price;
+    		});
+    		$scope.price = price;
+    	});
+    }]);
+
+我们直接在事件总线上监控purchase事件就可以了，然后对事件的数据进行一些处理，整个逻辑就这么简单。
+
+#6. 界面流  
 
 大家经常见到一些测试性格的选择题，每次展示一个题目，如果选择A，就跳转到第5题，选择B就跳转到第7题这样的。假如说这些选项是固定的，那很简单，无非是加很多判断，如果每个步骤都是可以配置的，这个实现方式就值得去思考一下了。
 
@@ -362,23 +501,32 @@ HTML界面里加上这句即可：
 
 即使是工作流，在这种场景下也有两种用法，一种是执行过程放在服务端，一种是放在客户端。前者实现起来更复杂一些，流程启动的时候，去发起一个请求，把流程模版实例化，然后从开始节点往后，得到第一个节点数据返回给前端，
 
-	function FlowController($scope) {
-		$scope.currentState = null;
-
-		var data = {
-			states: [],
-			transitions: []
-		};
-
-		$scope.loadData = function(data) {
-			this.states = data.states;
-		};
-
-		$scope.execute = function() {
-			if (this.currentState) {
-				this.currentState.execute();
-			}
-		};
-
-		$scope.loadData(flowData);
-	}
+    angular.module("mis").controller("Wizard", ["$scope", function ($scope) {
+    	$scope.steps = [
+    		{title: "Profile", url: "partial/profile.html", selected:true},
+    		{title: "Goods", url: "partial/goods.html", selected:false},
+    		{title: "Cart", url: "partial/cart.html", selected:false}
+    	];
+    
+    	$scope.currentStep = 0;
+    
+    	$scope.prev = function () {
+    		$scope.steps[$scope.currentStep].selected = false;
+    		$scope.currentStep--;
+    		$scope.steps[$scope.currentStep].selected = true;
+    	};
+    
+    	$scope.next = function () {
+    		$scope.steps[$scope.currentStep].selected = false;
+    		$scope.currentStep++;
+    		$scope.steps[$scope.currentStep].selected = true;
+    	};
+    
+    	$scope.isFirst = function () {
+    		return $scope.currentStep === 0;
+    	};
+    
+    	$scope.isLast = function () {
+    		return $scope.currentStep === ($scope.steps.length-1);
+    	};
+    }]);

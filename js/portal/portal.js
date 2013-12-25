@@ -1,11 +1,8 @@
 (function () {
 	var app = angular.module("mis", []);
 
-	app.config(function ($controllerProvider, $compileProvider, $filterProvider, $provide) {
-		app.controllerProvider = $controllerProvider;
-		app.compileProvider = $compileProvider;
-		app.filterProvider = $filterProvider;
-		app.provide = $provide;
+	app.config(function ($controllerProvider) {
+		app.controller = $controllerProvider.register;
 	});
 })();
 
