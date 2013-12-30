@@ -499,7 +499,11 @@ cart.js
 
 我们常常有这样的需求，类似一个wizard的界面，一步一步引导用户完成某些事情，每个步骤的下一步可能跟当前步骤的选择有关，这种就是一个工作流的典型应用场景。
 
-即使是工作流，在这种场景下也有两种用法，一种是执行过程放在服务端，一种是放在客户端。前者实现起来更复杂一些，流程启动的时候，去发起一个请求，把流程模版实例化，然后从开始节点往后，得到第一个节点数据返回给前端，
+即使是工作流，在这种场景下也有两种用法，一种是执行过程放在服务端，一种是放在客户端。前者实现起来更复杂一些，流程启动的时候，去发起一个请求，把流程模版实例化，然后从开始节点往后，得到第一个节点数据返回给前端。
+
+后者通常叫做界面流，响应较快，我们可以尝试在Angular里面实现一个简单的：
+
+##6.1. 最简单的界面流
 
     angular.module("mis").controller("Wizard", ["$scope", function ($scope) {
     	$scope.steps = [
@@ -530,3 +534,32 @@ cart.js
     		return $scope.currentStep === ($scope.steps.length-1);
     	};
     }]);
+
+wizard.html
+    
+    <div class="panel panel-default">
+    	<div class="panel-heading">
+    		<h3 class="panel-title">Wizard</h3>
+    	</div>
+    	<div class="panel-body" ng-controller="Wizard">
+    		<div class="wizard">
+    			<ul class="steps">
+    				<li ng-repeat="step in steps" ng-class="{active:step.selected}"><span class="badge" ng-bind="$index"></span>{{step.title}}<span class="chevron"></span></li>
+    			</ul>
+    			<div class="actions">
+    				<button type="button" class="btn btn-mini btn-prev" ng-click="prev()" ng-disabled="isFirst()"><i class="icon-arrow-left"></i>Prev</button>
+    				<button type="button" class="btn btn-mini btn-next" ng-click="next()" ng-disabled="isLast()">Next<i class="icon-arrow-right"></i></button>
+    			</div>
+    		</div>
+    		<div class="step-content">
+    			<div ng-repeat="step in steps" ng-include src="step.url" ng-class="{'step-pane active':step.selected, 'step-pane':!step.selected}"></div>
+    		</div>
+    	</div>
+    </div>
+    
+样式在这里就不列出了。
+
+我们看到，这里面实现了一个很简单的wizard，可以点击上一步下一步，每步之间共享数据。对于我们来说，这个例子还是比较简单，因为它不带条件，而且用的是ng-include，没有像这篇文章前一部分那样考虑更复杂的加载情况。
+
+##6.2. 状态机
+
