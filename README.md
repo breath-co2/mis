@@ -27,18 +27,21 @@
 
 只有界面的情况很好办，它直接拿来放在某容器里就可以了，互相影响不到，在Angular里面直接搞个ng-include把它包含到主界面就可以了。
 
-    <div ng-include src="'partial/simple.html'"></div>
-
+``` html
+<div ng-include src="'partial/simple.html'"></div>
+```
 simple.html的源码：
 
-    <div class="panel panel-default">
-    	<div class="panel-heading">
-    		<h3 class="panel-title">Simple HTML Loader</h3>
-    	</div>
-    	<div class="panel-body">
-    		<span>I am a static HTML partial file.</span>
-    	</div>
-    </div>
+``` html
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">Simple HTML Loader</h3>
+	</div>
+	<div class="panel-body">
+		<span>I am a static HTML partial file.</span>
+	</div>
+</div>
+```
 
 好了，我们来看稍微复杂点的，引入的代码有了行间逻辑。什么是行间逻辑呢？意思是这一段JavaScript逻辑只作用于当前界面片段，出于某些原因，这些逻辑必须紧跟当前的界面，需要在全页面加载出来之前就能执行，比如某些搜索，只要搜索框一出来就应当能操作，这就是一种典型的需求。
 
@@ -46,49 +49,55 @@ simple.html的源码：
 
 inlinelogic.html
 
-    <div class="panel panel-default">
-    	<div class="panel-heading">
-    		<h3 class="panel-title">Simple HTML with inline logic</h3>
-    	</div>
-    	<div class="panel-body">
-    		<input type="button" value="click me" onclick="greet()"/>
-    		<script type="text/javascript">
-    			function greet() {
-    				alert("I am from inline logic!");
-    			}
-    		</script>
-    	</div>
-    </div>
+``` html
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">Simple HTML with inline logic</h3>
+	</div>
+	<div class="panel-body">
+		<input type="button" value="click me" onclick="greet()"/>
+		<script type="text/javascript">
+			function greet() {
+				alert("I am from inline logic!");
+			}
+		</script>
+	</div>
+</div>
+```
 
 还是这么写：
 
-    <div ng-include src="'partial/inlinelogic.html'"></div>
+``` html
+<div ng-include src="'partial/inlinelogic.html'"></div>
+```
 
 唔？这次发现不能运行了。为什么呢？
 
 本质原因，是把某HTML片段用innerHTML方式加入DOM的时候，如果其中带有JavaScript，这段代码不会被执行，但是如果有script标签，通过appendChild的方式加到DOM里，是可以执行的，这个过程用ng-include没法做，所以我们来自己写个指令：
 
-    angular.module("mis").directive("htmlLoader", ["$http", function ($http) {
-    	return function (scope, element, attrs) {
-    		var url = attrs.url;
-    		$http.get(url).success(function (result) {
-    			var newElement = angular.element(result);
-    
-    			var scripts = newElement[0].getElementsByTagName("script");
-    			var deferredScripts = [];
-    			for (var i=0; i<scripts.length; i++) {
-    				deferredScripts.push(scripts[i].parentElement.removeChild(scripts[i]));
-    			}
-    
-    			element.append(newElement);
-    			for (var j=0; j<deferredScripts.length; j++) {
-    				var script = document.createElement("script")
-    				script.innerHTML = deferredScripts[j].innerHTML;
-    				newElement[0].appendChild(script);
-    			}
-    		});
-    	};
-    }]);
+``` js
+angular.module("mis").directive("htmlLoader", ["$http", function ($http) {
+	return function (scope, element, attrs) {
+		var url = attrs.url;
+		$http.get(url).success(function (result) {
+			var newElement = angular.element(result);
+
+			var scripts = newElement[0].getElementsByTagName("script");
+			var deferredScripts = [];
+			for (var i=0; i<scripts.length; i++) {
+				deferredScripts.push(scripts[i].parentElement.removeChild(scripts[i]));
+			}
+
+			element.append(newElement);
+			for (var j=0; j<deferredScripts.length; j++) {
+				var script = document.createElement("script")
+				script.innerHTML = deferredScripts[j].innerHTML;
+				newElement[0].appendChild(script);
+			}
+		});
+	};
+}]);
+```
 
 然后在使用的时候：
 
@@ -108,14 +117,16 @@ inlinelogic.html
 
 举例来说，如果门户自带了一个用户模型，里面存放了用户的个人资料和相关操作，在部件里也是可以引入的，就像这样：
 
-    <div class="panel panel-default">
-    	<div class="panel-heading">
-    		<h3 class="panel-title">Greet</h3>
-    	</div>
-    	<div class="panel-body">
-    		Hello  <span ng-bind="user.name"></span>
-    	</div>
-    </div>
+``` html
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">Greet</h3>
+	</div>
+	<div class="panel-body">
+		Hello  <span ng-bind="user.name"></span>
+	</div>
+</div>
+```
 
 这个界面被用ng-include的方式引入门户主界面就可以直接使用了。这是很简单的情况，我们再看看复杂一些的。
 
@@ -127,31 +138,35 @@ inlinelogic.html
 
 clock.js
 
-    angular.module("widgets", []);
-    
-    angular.module("widgets").controller("ClockCtrl", function($timeout, $scope) {
-    	$scope.now = new Date();
-    	updateLater();
-    
-    	var timeoutId;
-    	function updateLater() {
-    		$scope.now = new Date();
-    		timeoutId = $timeout(function() {
-    			updateLater();
-    		}, 1000);
-    	}
-    });
+``` js
+angular.module("widgets", []);
+
+angular.module("widgets").controller("ClockCtrl", function($timeout, $scope) {
+	$scope.now = new Date();
+	updateLater();
+
+	var timeoutId;
+	function updateLater() {
+		$scope.now = new Date();
+		timeoutId = $timeout(function() {
+			updateLater();
+		}, 1000);
+	}
+});
+```
 
 另有一个界面用于展示:
 
 clock.html
 
-    <div ng-controller="ClockCtrl" class="panel panel-default">
-    	<div class="panel-heading">
-    		<h3 class="panel-title">I am an external application!</h3>
-    	</div>
-    	<div class="panel-body" ng-bind="now"></div>
-    </div>
+``` html
+<div ng-controller="ClockCtrl" class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">I am an external application!</h3>
+	</div>
+	<div class="panel-body" ng-bind="now"></div>
+</div>
+```
     
 很显然，我们刚才的html loader已经没法使它正常运行了，而用ng-include的方式，没法为它引入所依赖的js文件，也不能执行。如果把clock.js放在门户里加载，也不合适，因为门户需要独立于部件，不应有所依赖，这种情况怎么办呢？
 
@@ -161,27 +176,31 @@ clock.html
 
 我们期望的写法是这样，指定部件主界面模版的url，JavaScript代码路径，还有所在的模块，剩下的就是要在app loader这个directive里要做的事情了。
 
-    <div app-loader url="partial/clock.html" module="widgets" scripts="js/widgets/clock.js"></div>
+``` html
+<div app-loader url="partial/clock.html" module="widgets" scripts="js/widgets/clock.js"></div>
+```
 
 Angular的bootstrap函数可以用于把独立的ng-app初始化一遍，对于这种情况，正合适。
 
-    angular.module("mis").directive("appLoader", ["$http", "$compile", function ($http) {
-    	return function (scope, element, attrs) {
-    		var module = attrs.module;
-    		var url = attrs.url;
-    		var scripts = attrs.scripts.split(",") || [];
+``` js
+angular.module("mis").directive("appLoader", ["$http", "$compile", function ($http) {
+	return function (scope, element, attrs) {
+		var module = attrs.module;
+		var url = attrs.url;
+		var scripts = attrs.scripts.split(",") || [];
 
-    		$script(scripts, function () {
-    			scope.$apply(function () {
-    				$http.get(url).success(function (result) {
-    					var elem = angular.element(result);
-    					angular.bootstrap(elem, [module]);
-    					element.append(elem);
-    				});
-    			});
-    		});
-    	};
-    }]); 
+		$script(scripts, function () {
+			scope.$apply(function () {
+				$http.get(url).success(function (result) {
+					var elem = angular.element(result);
+					angular.bootstrap(elem, [module]);
+					element.append(elem);
+				});
+			});
+		});
+	};
+}]); 
+```
     
 现在看起来，我们的加载方案很有点像样了。再继续考虑更复杂的情况。
 
@@ -189,93 +208,99 @@ Angular的bootstrap函数可以用于把独立的ng-app初始化一遍，对于�
 
 todo.js
 
-    angular.module("widgets", []);
+``` js
+angular.module("widgets", []);
 
-    angular.module("widgets").controller("TodoCtrl", function ($scope) {
-    	$scope.todos = [
-    		{text:'learn angular', done:true},
-    		{text:'build an angular app', done:false}];
-    
-    	$scope.addTodo = function() {
-    		$scope.todos.push({text:$scope.todoText, done:false});
-    		$scope.todoText = '';
-    	};
-    
-    	$scope.remaining = function() {
-    		var count = 0;
-    		angular.forEach($scope.todos, function(todo) {
-    			count += todo.done ? 0 : 1;
-    		});
-    		return count;
-    	};
-    
-    	$scope.archive = function() {
-    		var oldTodos = $scope.todos;
-    		$scope.todos = [];
-    		angular.forEach(oldTodos, function(todo) {
-    			if (!todo.done) $scope.todos.push(todo);
-    		});
-    	};
-    });
+angular.module("widgets").controller("TodoCtrl", function ($scope) {
+	$scope.todos = [
+		{text:'learn angular', done:true},
+		{text:'build an angular app', done:false}];
+
+	$scope.addTodo = function() {
+		$scope.todos.push({text:$scope.todoText, done:false});
+		$scope.todoText = '';
+	};
+
+	$scope.remaining = function() {
+		var count = 0;
+		angular.forEach($scope.todos, function(todo) {
+			count += todo.done ? 0 : 1;
+		});
+		return count;
+	};
+
+	$scope.archive = function() {
+		var oldTodos = $scope.todos;
+		$scope.todos = [];
+		angular.forEach(oldTodos, function(todo) {
+			if (!todo.done) $scope.todos.push(todo);
+		});
+	};
+});
+```
 
 todo.html
 
-    <div ng-controller="TodoCtrl" class="panel panel-default">
-    	<div class="panel-heading">
-    		<h3 class="panel-title">I am an external application!</h3>
-    	</div>
-    	<div class="panel-body">
-    		<span>{{remaining()}} of {{todos.length}} remaining</span>
-    		[ <a href="" ng-click="archive()">archive</a> ]
-    		<ul class="unstyled">
-    			<li ng-repeat="todo in todos">
-    				<input type="checkbox" ng-model="todo.done">
-    				<span class="done-{{todo.done}}">{{todo.text}}</span>
-    			</li>
-    		</ul>
-    		<form ng-submit="addTodo()">
-    			<input type="text" ng-model="todoText"  size="30"
-    			       placeholder="add new todo here">
-    			<input class="btn-primary" type="submit" value="add">
-    		</form>
-    	</div>
-    
-    	<style>
-    		.done-true {
-    			text-decoration: line-through;
-    			color: grey;
-    		}
-    	</style>
-    </div>
+``` html
+<div ng-controller="TodoCtrl" class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">I am an external application!</h3>
+	</div>
+	<div class="panel-body">
+		<span>{{remaining()}} of {{todos.length}} remaining</span>
+		[ <a href="" ng-click="archive()">archive</a> ]
+		<ul class="unstyled">
+			<li ng-repeat="todo in todos">
+				<input type="checkbox" ng-model="todo.done">
+				<span class="done-{{todo.done}}">{{todo.text}}</span>
+			</li>
+		</ul>
+		<form ng-submit="addTodo()">
+			<input type="text" ng-model="todoText"  size="30"
+			       placeholder="add new todo here">
+			<input class="btn-primary" type="submit" value="add">
+		</form>
+	</div>
+
+	<style>
+		.done-true {
+			text-decoration: line-through;
+			color: grey;
+		}
+	</style>
+</div>
+```
 
 它当然单独也是可以运行的。注意到刚才的todo.js里，第一句就是widgets这个module的声明，如果在门户中同时加载clock和todo，就会出问题，因为对widgets这个module声明了两次，怎么办呢？
 
 我们想到把module的声明放在directive里，如果未声明这个module，就声明一下，这样，在部件里不用写module的声明了，于是，app loader的代码变成了这样：
 
-    angular.module("mis").directive("appLoader", ["$http", "$compile", function ($http) {
-    	return function (scope, element, attrs) {
-    		var module = attrs.module;
-    		var url = attrs.url;
-    		var scripts = attrs.scripts.split(",") || [];
-    
-    		try {
-    			var m = angular.module(module);
-    		}
-    		catch (ex) {
-    			angular.module(module, []);
-    		}
-     
-    		$script(scripts, function () {
-    			scope.$apply(function () {
-    				$http.get(url).success(function (result) {
-    					var elem = angular.element(result);
-    					angular.bootstrap(elem, [module]);
-    					element.append(elem);
-    				});
-    			});
-    		});
-    	};
-    }]);
+``` js
+angular.module("mis").directive("appLoader", ["$http", "$compile", function ($http) {
+	return function (scope, element, attrs) {
+		var module = attrs.module;
+		var url = attrs.url;
+		var scripts = attrs.scripts.split(",") || [];
+
+		try {
+			var m = angular.module(module);
+		}
+		catch (ex) {
+			angular.module(module, []);
+		}
+ 
+		$script(scripts, function () {
+			scope.$apply(function () {
+				$http.get(url).success(function (result) {
+					var elem = angular.element(result);
+					angular.bootstrap(elem, [module]);
+					element.append(elem);
+				});
+			});
+		});
+	};
+}]);
+```
 
 通过一个try语句，我们在未声明module的情况下，动态声明了一个，这样，这两个widget就可以同时挂接在门户上了。
 
@@ -287,42 +312,46 @@ todo.html
 
 goods.js
 
-    angular.module("mis").controller("GoodsCtrl",  ["$scope", "EventBus", function ($scope, EventBus) {
-    	$scope.numOfApple = 0;
-    	$scope.numOfOrange = 0;
-    	$scope.numOfPear = 0;
-    
-    	$scope.submit = function() {
-    		//todo
-    	}
-    }]);
+``` js
+angular.module("mis").controller("GoodsCtrl",  ["$scope", "EventBus", function ($scope, EventBus) {
+	$scope.numOfApple = 0;
+	$scope.numOfOrange = 0;
+	$scope.numOfPear = 0;
+
+	$scope.submit = function() {
+		//todo
+	}
+}]);
+```
 
 goods.html
 
-    <div ng-controller="GoodsCtrl" class="panel panel-default">
-    	<div class="panel-heading">
-    		<h3 class="panel-title">Goods List</h3>
-    	</div>
-    	<div class="panel-body">
-    		<form role="form">
-    			<div class="form-group">
-    				<label>Apple</label>
-    				<input type="number" ng-model="numOfApple" min="0" class="form-control"/>
-    			</div>
-    			<div class="form-group">
-    				<label>Orange</label>
-    				<input type="number" ng-model="numOfOrange" min="0" class="form-control"/>
-    			</div>
-    			<div class="form-group">
-    				<label>Pear</label>
-    				<input type="number" ng-model="numOfPear" min="0" class="form-control"/>
-    			</div>
-    			<div class="form-group">
-    				<button ng-click="submit()" class="btn">submit</button>
-    			</div>
-    		</form>
-    	</div>
-    </div>
+``` js
+<div ng-controller="GoodsCtrl" class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">Goods List</h3>
+	</div>
+	<div class="panel-body">
+		<form role="form">
+			<div class="form-group">
+				<label>Apple</label>
+				<input type="number" ng-model="numOfApple" min="0" class="form-control"/>
+			</div>
+			<div class="form-group">
+				<label>Orange</label>
+				<input type="number" ng-model="numOfOrange" min="0" class="form-control"/>
+			</div>
+			<div class="form-group">
+				<label>Pear</label>
+				<input type="number" ng-model="numOfPear" min="0" class="form-control"/>
+			</div>
+			<div class="form-group">
+				<button ng-click="submit()" class="btn">submit</button>
+			</div>
+		</form>
+	</div>
+</div>
+```
 
 代码很简单，没什么特别的，先不考虑提交按钮要做的事情。
 
@@ -334,22 +363,24 @@ goods.html
 
 对于这种在弄个新的指令吧，叫partial loader。注意到在所有的Angular指导中，在同一module下动态加入新DOM，都是用$compile来做，我们也不例外：
 
-    angular.module("mis").directive("partialLoader", ["$http", "$compile", function ($http, $compile) {
-    	return function (scope, element, attrs) {
-    		var module = attrs.module;
-    		var url = attrs.url;
-    		var scripts = attrs.scripts.split(",") || [];
-    
-    		$script(scripts, function () {
-    			scope.$apply(function () {
-    				$http.get(url).success(function (result) {
-    					element.html(result);
-    					$compile(element.contents())(scope);
-    				});
-    			});
-    		});
-    	};
-    }]);
+``` js
+angular.module("mis").directive("partialLoader", ["$http", "$compile", function ($http, $compile) {
+	return function (scope, element, attrs) {
+		var module = attrs.module;
+		var url = attrs.url;
+		var scripts = attrs.scripts.split(",") || [];
+
+		$script(scripts, function () {
+			scope.$apply(function () {
+				$http.get(url).success(function (result) {
+					element.html(result);
+					$compile(element.contents())(scope);
+				});
+			});
+		});
+	};
+}]);
+```
 
 现在我们使用的时候不必显式指定module了：
 
@@ -359,9 +390,11 @@ goods.html
 
 来看看这篇文章吧：[lazy-loading-in-angularjs](http://ify.io/lazy-loading-in-angularjs/ "")，它给我们解释了原理，也提供了解决办法，所以可以借用。我们只要在MIS这个module初始化的时候加这么一段配置就可以了：
 
-	app.config(function ($controllerProvider) {
-		app.controller = $controllerProvider.register;
-	});
+``` js
+app.config(function ($controllerProvider) {
+	app.controller = $controllerProvider.register;
+});
+```
 
 现在，我们的商品列表部件就能跑起来了。
 
@@ -381,65 +414,69 @@ goods.html
 
 因为我们的部件之间不存在作用域继承关系，所以通过一个服务或者是$rootScope来作通信比较好，我们创建一个服务叫做事件总线：
 
-    angular.module("mis").service("EventBus", function () {
-    	var eventMap = {};
-    
-    	return {
-    		on: function (eventType, handler) {
-    			//multiple event listener
-    			if (!eventMap[eventType]) {
-    				eventMap[eventType] = [];
-    			}
-    			eventMap[eventType].push(handler);
-    		},
-    
-    		off: function (eventType, handler) {
-    			for (var i = 0; i < eventMap[eventType].length; i++) {
-    				if (eventMap[eventType][i] === handler) {
-    					eventMap[eventType].splice(i, 1);
-    					break;
-    				}
-    			}
-    		},
-    
-    		fire: function (event) {
-    			var eventType = event.type;
-    			if (eventMap[eventType]) {
-    				for (var i = 0; i < eventMap[eventType].length; i++) {
-    					eventMap[eventType][i](event);
-    				}
-    			}
-    		}
-    	};
-    });
+``` js
+angular.module("mis").service("EventBus", function () {
+	var eventMap = {};
+
+	return {
+		on: function (eventType, handler) {
+			//multiple event listener
+			if (!eventMap[eventType]) {
+				eventMap[eventType] = [];
+			}
+			eventMap[eventType].push(handler);
+		},
+
+		off: function (eventType, handler) {
+			for (var i = 0; i < eventMap[eventType].length; i++) {
+				if (eventMap[eventType][i] === handler) {
+					eventMap[eventType].splice(i, 1);
+					break;
+				}
+			}
+		},
+
+		fire: function (event) {
+			var eventType = event.type;
+			if (eventMap[eventType]) {
+				for (var i = 0; i < eventMap[eventType].length; i++) {
+					eventMap[eventType][i](event);
+				}
+			}
+		}
+	};
+});
+```
 
 接着，把刚才的商品列表的提交代码完善一下：
 
 goods.js
 
-    angular.module("mis").controller("GoodsCtrl",  ["$scope", "EventBus", function ($scope, EventBus) {
-    	$scope.numOfApple = 0;
-    	$scope.numOfOrange = 0;
-    	$scope.numOfPear = 0;
-    
-    	$scope.submit = function() {
-    		EventBus.fire({
-    			type:"purchase",
-    			data: [{
-    			type: "Apple",
-    			number: $scope.numOfApple,
-    			price: 5
-    		}, {
-    			type: "Orange",
-    			number: $scope.numOfOrange,
-    			price: 4
-    		}, {
-    			type: "Pear",
-    			number: $scope.numOfPear,
-    			price: 3
-    		}]});
-    	}
-    }]);
+``` js
+angular.module("mis").controller("GoodsCtrl",  ["$scope", "EventBus", function ($scope, EventBus) {
+	$scope.numOfApple = 0;
+	$scope.numOfOrange = 0;
+	$scope.numOfPear = 0;
+
+	$scope.submit = function() {
+		EventBus.fire({
+			type:"purchase",
+			data: [{
+			type: "Apple",
+			number: $scope.numOfApple,
+			price: 5
+		}, {
+			type: "Orange",
+			number: $scope.numOfOrange,
+			price: 4
+		}, {
+			type: "Pear",
+			number: $scope.numOfPear,
+			price: 3
+		}]});
+	}
+}]);
+```
 
 我们可以看到，在商品提交的时候，往这个事件总线上发了一个purchase事件，带有所购买的商品种类和价值数据，然后，在购物车里面如何处理呢？
 
@@ -447,51 +484,55 @@ goods.js
 
 cart.html
 
-    <div class="panel panel-default" ng-controller="CartCtrl">
-    	<div class="panel-heading">
-    		<h3 class="panel-title">Shopping Cart</h3>
-    	</div>
-    	<div class="panel-body">
-    		<table class="table table-hover table-bordered">
-    			<thead>
-    				<tr>
-    					<th>Type</th>
-    					<th>Number</th>
-    					<th>Price</th>
-    				</tr>
-    			</thead>
-    			<tbody>
-    				<tr ng-repeat="good in goodsList">
-    					<td ng-bind="good.type"></td>
-    					<td ng-bind="good.number"></td>
-    					<td ng-bind="good.price"></td>
-    				</tr>
-    			</tbody>
-    			<tfoot>
-    				<div>
-    					Hello, <span ng-bind="user.name"></span>, total price is <span ng-bind="price"></span>.
-    				</div>
-    			</tfoot>
-    		</table>
-    	</div>
-    </div>
+``` html
+<div class="panel panel-default" ng-controller="CartCtrl">
+	<div class="panel-heading">
+		<h3 class="panel-title">Shopping Cart</h3>
+	</div>
+	<div class="panel-body">
+		<table class="table table-hover table-bordered">
+			<thead>
+				<tr>
+					<th>Type</th>
+					<th>Number</th>
+					<th>Price</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr ng-repeat="good in goodsList">
+					<td ng-bind="good.type"></td>
+					<td ng-bind="good.number"></td>
+					<td ng-bind="good.price"></td>
+				</tr>
+			</tbody>
+			<tfoot>
+				<div>
+					Hello, <span ng-bind="user.name"></span>, total price is <span ng-bind="price"></span>.
+				</div>
+			</tfoot>
+		</table>
+	</div>
+</div>
+```
 
 cart.js
 
-    angular.module("mis").controller("CartCtrl", ["$scope", "EventBus", function ($scope, EventBus) {
-    	$scope.goodsList = [];
-    	$scope.price = 0;
-    
-    	EventBus.on("purchase", function(evt) {
-    		$scope.goodsList = evt.data;
-    
-    		var price = 0;
-    		angular.forEach($scope.goodsList, function(item) {
-    			price += item.number * item.price;
-    		});
-    		$scope.price = price;
-    	});
-    }]);
+``` js
+angular.module("mis").controller("CartCtrl", ["$scope", "EventBus", function ($scope, EventBus) {
+	$scope.goodsList = [];
+	$scope.price = 0;
+
+	EventBus.on("purchase", function(evt) {
+		$scope.goodsList = evt.data;
+
+		var price = 0;
+		angular.forEach($scope.goodsList, function(item) {
+			price += item.number * item.price;
+		});
+		$scope.price = price;
+	});
+}]);
+```
 
 我们直接在事件总线上监控purchase事件就可以了，然后对事件的数据进行一些处理，整个逻辑就这么简单。
 
@@ -507,58 +548,62 @@ cart.js
 
 ##6.1. 最简单的界面流
 
-    angular.module("mis").controller("Wizard", ["$scope", function ($scope) {
-    	$scope.steps = [
-    		{title: "Profile", url: "partial/profile.html", selected:true},
-    		{title: "Goods", url: "partial/goods.html", selected:false},
-    		{title: "Cart", url: "partial/cart.html", selected:false}
-    	];
-    
-    	$scope.currentStep = 0;
-    
-    	$scope.prev = function () {
-    		$scope.steps[$scope.currentStep].selected = false;
-    		$scope.currentStep--;
-    		$scope.steps[$scope.currentStep].selected = true;
-    	};
-    
-    	$scope.next = function () {
-    		$scope.steps[$scope.currentStep].selected = false;
-    		$scope.currentStep++;
-    		$scope.steps[$scope.currentStep].selected = true;
-    	};
-    
-    	$scope.isFirst = function () {
-    		return $scope.currentStep === 0;
-    	};
-    
-    	$scope.isLast = function () {
-    		return $scope.currentStep === ($scope.steps.length-1);
-    	};
-    }]);
+``` js
+angular.module("mis").controller("Wizard", ["$scope", function ($scope) {
+	$scope.steps = [
+		{title: "Profile", url: "partial/profile.html", selected:true},
+		{title: "Goods", url: "partial/goods.html", selected:false},
+		{title: "Cart", url: "partial/cart.html", selected:false}
+	];
+
+	$scope.currentStep = 0;
+
+	$scope.prev = function () {
+		$scope.steps[$scope.currentStep].selected = false;
+		$scope.currentStep--;
+		$scope.steps[$scope.currentStep].selected = true;
+	};
+
+	$scope.next = function () {
+		$scope.steps[$scope.currentStep].selected = false;
+		$scope.currentStep++;
+		$scope.steps[$scope.currentStep].selected = true;
+	};
+
+	$scope.isFirst = function () {
+		return $scope.currentStep === 0;
+	};
+
+	$scope.isLast = function () {
+		return $scope.currentStep === ($scope.steps.length-1);
+	};
+}]);
+```
 
 wizard.html
     
-    <div class="panel panel-default">
-    	<div class="panel-heading">
-    		<h3 class="panel-title">Wizard</h3>
-    	</div>
-    	<div class="panel-body" ng-controller="Wizard">
-    		<div class="wizard">
-    			<ul class="steps">
-    				<li ng-repeat="step in steps" ng-class="{active:step.selected}"><span class="badge" ng-bind="$index"></span>{{step.title}}<span class="chevron"></span></li>
-    			</ul>
-    			<div class="actions">
-    				<button type="button" class="btn btn-mini btn-prev" ng-click="prev()" ng-disabled="isFirst()"><i class="icon-arrow-left"></i>Prev</button>
-    				<button type="button" class="btn btn-mini btn-next" ng-click="next()" ng-disabled="isLast()">Next<i class="icon-arrow-right"></i></button>
-    			</div>
-    		</div>
-    		<div class="step-content">
-    			<div ng-repeat="step in steps" ng-include src="step.url" ng-class="{'step-pane active':step.selected, 'step-pane':!step.selected}"></div>
-    		</div>
-    	</div>
-    </div>
-    
+``` html    
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">Wizard</h3>
+	</div>
+	<div class="panel-body" ng-controller="Wizard">
+		<div class="wizard">
+			<ul class="steps">
+				<li ng-repeat="step in steps" ng-class="{active:step.selected}"><span class="badge" ng-bind="$index"></span>{{step.title}}<span class="chevron"></span></li>
+			</ul>
+			<div class="actions">
+				<button type="button" class="btn btn-mini btn-prev" ng-click="prev()" ng-disabled="isFirst()"><i class="icon-arrow-left"></i>Prev</button>
+				<button type="button" class="btn btn-mini btn-next" ng-click="next()" ng-disabled="isLast()">Next<i class="icon-arrow-right"></i></button>
+			</div>
+		</div>
+		<div class="step-content">
+			<div ng-repeat="step in steps" ng-include src="step.url" ng-class="{'step-pane active':step.selected, 'step-pane':!step.selected}"></div>
+		</div>
+	</div>
+</div>
+```
+
 样式在这里就不列出了。
 
 我们看到，这里面实现了一个很简单的wizard，可以点击上一步下一步，每步之间共享数据。对于我们来说，这个例子还是比较简单，因为它不带条件，而且用的是ng-include，没有像这篇文章前一部分那样考虑更复杂的加载情况。
